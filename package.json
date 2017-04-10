@@ -1,0 +1,23 @@
+{
+  "name": "Rockola",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.15.2",
+    "express-react-views": "^0.10.2",
+    "express-session": "^1.15.2",
+    "mongoose": "^4.9.3",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "sha1": "^1.1.1",
+    "socket.io": "^1.7.3"
+  }
+}
