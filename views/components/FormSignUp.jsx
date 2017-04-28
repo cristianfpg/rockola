@@ -3,15 +3,13 @@ import React from 'react'
 export default class SignLogin extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      email: 'desarrollo1@coloralcuadrado.com',
-      contrasena : ''
-    };
+    this.state = {};
     this.handleChange = this.handleChange.bind(this);
   }
 
   handleChange(event) {
     this.setState({
+      nombre: event.target.nombre,
       email: event.target.email,
       contrasena: event.target.contrasena
     });
@@ -20,12 +18,14 @@ export default class SignLogin extends React.Component {
   render() {
     return (
       <div>
-        <h2>Signin</h2>  
-        <form method="post" action="/verificarusuario">
-          <label for="email"></label> 
+        <h2>Sign up</h2>  
+        <form method="post" action="/">
+          <label for="nombre">nombre</label>
+          <input type="text" id="nombre" name="nombre" value={this.state.nombre} onChange={this.handleChange}/>
+          <label for="email">email</label> 
           <input type="email" id="email" name="email" value={this.state.email} onChange={this.handleChange}/>
-          <label for="contrasena"></label> 
-          <input type="text" id="contrasena" name="contrasena" value={this.state.contrasena} onChange={this.handleChange}/>
+          <label for="contrasena">contraseña</label> 
+          <input type="password" id="contrasena" name="contrasena" value={this.state.contrasena} onChange={this.handleChange}/>
           <input type="submit"/>
         </form>
       </div>

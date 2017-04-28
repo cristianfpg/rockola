@@ -5,17 +5,17 @@ var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var app = express();
 var http = require('http').Server(app);
-var path = require('path');
+// var path = require('path');
 var io = require('socket.io')(http);
 var mongoose = require('mongoose');
-var sha1 = require('sha1');
+// var sha1 = require('sha1');
 mongoose.Promise = require('bluebird');
 mongoose.connect('mongodb://192.168.0.100:27017/rockola');
 
 app.use(express.static('public'));
 app.use(cookieParser());
 app.use(session({
-  secret: 'dejelofijo',
+  secret: 'unsecretocualquiera',
   resave: false,
   saveUninitialized: false
 }));
@@ -27,7 +27,7 @@ var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 // socket
 io.on('connection', function(socket){
-  console.log('io');
+  // console.log('io');
 });
 
 // mongoose
@@ -65,7 +65,7 @@ var Usuario = mongoose.model('Usuario', usuarioSchema);
 // rutas get
 app.get('/', function(req, res){
   if(req.session.nombre){
-    // res.send('Hola ' + req.session.nombre);
+    res.send('Hola ' + req.session.nombre);
   }else{
     res.redirect('/signin');
     // var nombre = 'Tito';
@@ -77,9 +77,17 @@ app.get('/', function(req, res){
   // });
 });
 app.get('/signin', function(req, res){
-  res.render('pages/SignIn', {prueba: 'listo!'});
+  res.render('pages/SignIn', {/*prueba: 'listo!'*/});
 });
 
+app.get('/signup', function(req, res){
+  res.render('pages/SignUp', {/*prueba: 'listo!'*/});
+});
+
+app.get('/destroy',function(req, res){
+  req.session.destroy();
+  res.redirect('/');
+});
 
 // rutas post
 app.post('/nuevousuario',urlencodedParser,function(req,res){
@@ -92,22 +100,19 @@ app.post('/nuevousuario',urlencodedParser,function(req,res){
 })
 
 app.post('/verificarusuario',urlencodedParser,function(req,res){
-  console.log(req.body.email);
-  console.log(req.body.contrasena);
-  // Usuario.find({email: req.body.email}, function(err, callback){
-  //   if(err){
-  //     res.end();
-  //     console.log('err');
-  //   }else{
-  //     if(req.body.contrasena == callback[0].contrasena){
-  //       console.log('bien');
-  //       res.send('contraseña correcta');
-  //     }else{
-  //       console.log('mal');
-  //       res.send('mal');
-  //     }
-  //   }
-  // });
+  Usuario.find({email: req.body.email}, function(err, callback){
+    if(err){
+      console.log('err');
+    }else{
+      if(req.body.contrasena == callback[0].contrasena){
+        console.log('bien');
+        req.session.nombre = callback[0].nombre;
+      }else{
+        console.log('mal');
+      }
+    }
+    res.redirect('/');
+  });
 })
 
 // puerto

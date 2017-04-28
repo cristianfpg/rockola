@@ -1,10 +1,10 @@
 import React from 'react'
 import HtmlLayout from '../layouts/Html'
-import FormSignIn from '../components/FormSignIn'
+import FormSignUp from '../components/FormSignUp'
 
 export default class Index extends React.Component {
   render() {
-    var element = <FormSignIn/>
+    var element = <FormSignUp/>
     return (
       <HtmlLayout contenido={element}/>
     );
