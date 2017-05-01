@@ -10,7 +10,8 @@ var io = require('socket.io')(http);
 var mongoose = require('mongoose');
 // var sha1 = require('sha1');
 mongoose.Promise = require('bluebird');
-mongoose.connect('mongodb://192.168.0.100:27017/rockola');
+// mongoose.connect('mongodb://192.168.0.100:27017/rockola'); // ipcolor
+mongoose.connect('mongodb://localhost:27017/rockola');
 
 app.use(express.static('public'));
 app.use(cookieParser());
@@ -64,6 +65,7 @@ var Usuario = mongoose.model('Usuario', usuarioSchema);
 
 // rutas get
 app.get('/', function(req, res){
+  /*
   if(req.session.nombre){
     res.send('Hola ' + req.session.nombre);
   }else{
@@ -75,6 +77,8 @@ app.get('/', function(req, res){
   // Usuario.find({}, function(err, callback){
   //   res.render('IndexPrueba', {usuarios: callback});
   // });
+  */
+  res.render('prueba/index', {/*prueba: 'listo!'*/});
 });
 app.get('/signin', function(req, res){
   res.render('pages/SignIn', {/*prueba: 'listo!'*/});
@@ -93,7 +97,8 @@ app.get('/destroy',function(req, res){
 app.post('/nuevousuario',urlencodedParser,function(req,res){
   var usuarioNuevo = new Usuario({
     nombre: req.body.nombre,
-    email: req.body.email
+    email: req.body.email,
+    contrasena: req.body.contrasena
   })
   usuarioNuevo.save();
   res.redirect('/');

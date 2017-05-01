@@ -19,7 +19,7 @@ export default class SignLogin extends React.Component {
     return (
       <div>
         <h2>Sign up</h2>  
-        <form method="post" action="/">
+        <form method="post" action="/nuevousuario">
           <label for="nombre">nombre</label>
           <input type="text" id="nombre" name="nombre" value={this.state.nombre} onChange={this.handleChange}/>
           <label for="email">email</label> 
