@@ -65,9 +65,8 @@ var Usuario = mongoose.model('Usuario', usuarioSchema);
 
 // rutas get
 app.get('/', function(req, res){
-  /*
   if(req.session.nombre){
-    res.send('Hola ' + req.session.nombre);
+    res.render('pages/Index', {nombre: req.session.nombre});
   }else{
     res.redirect('/signin');
     // var nombre = 'Tito';
@@ -77,8 +76,6 @@ app.get('/', function(req, res){
   // Usuario.find({}, function(err, callback){
   //   res.render('IndexPrueba', {usuarios: callback});
   // });
-  */
-  res.render('prueba/index', {/*prueba: 'listo!'*/});
 });
 app.get('/signin', function(req, res){
   res.render('pages/SignIn', {/*prueba: 'listo!'*/});
