@@ -1,6 +1,6 @@
 import React from 'react'
 
-export default class SignLogin extends React.Component {
+export default class FormSignIn extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -20,11 +20,11 @@ export default class SignLogin extends React.Component {
   render() {
     return (
       <div>
-        <h2>Signin</h2>  
+        <h2>Signin</h2>
         <form method="post" action="/verificarusuario">
-          <label for="email"></label> 
+          <label for="email"></label>
           <input type="email" id="email" name="email" value={this.state.email} onChange={this.handleChange}/>
-          <label for="contrasena"></label> 
+          <label for="contrasena"></label>
           <input type="text" id="contrasena" name="contrasena" value={this.state.contrasena} onChange={this.handleChange}/>
           <input type="submit"/>
         </form>

@@ -10,8 +10,8 @@ var io = require('socket.io')(http);
 var mongoose = require('mongoose');
 // var sha1 = require('sha1');
 mongoose.Promise = require('bluebird');
-// mongoose.connect('mongodb://192.168.0.100:27017/rockola'); // ipcolor
-mongoose.connect('mongodb://localhost:27017/rockola');
+mongoose.connect('mongodb://192.168.0.252:27017/rockola'); // ipcolor
+// mongoose.connect('mongodb://localhost:27017/rockola');
 
 app.use(express.static('public'));
 app.use(cookieParser());
@@ -21,23 +21,26 @@ app.use(session({
   saveUninitialized: false
 }));
 
+app.set('views', __dirname + '/views');
 app.set('view engine', 'jsx');
-var options = { doctype: '<!DOCTYPE html>' };
+var options = { beautify: true };
 app.engine('jsx', require('express-react-views').createEngine(options));
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 // socket
 io.on('connection', function(socket){
-  // console.log('io');
+  console.log('a user connected');
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+  });
 });
-
 // mongoose
 var db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
   // console.log('conectado')
-}); 
+});
 
 var usuarioSchema = mongoose.Schema({
   nombre: {
@@ -64,7 +67,10 @@ var Usuario = mongoose.model('Usuario', usuarioSchema);
 // usuarioNuevo.save();
 
 // rutas get
+app.get('/', require('./routes').index);
+/*
 app.get('/', function(req, res){
+  /*
   if(req.session.nombre){
     res.render('pages/Index', {nombre: req.session.nombre});
   }else{
@@ -73,10 +79,14 @@ app.get('/', function(req, res){
     // req.session.nombre = nombre;
     // res.send('Hola usuario desconocido. De ahora en adelante te llamaremos ' + nombre);
   }
+  *
+
   // Usuario.find({}, function(err, callback){
   //   res.render('IndexPrueba', {usuarios: callback});
   // });
+  res.render('pages/Prueba', {});
 });
+*/
 app.get('/signin', function(req, res){
   res.render('pages/SignIn', {/*prueba: 'listo!'*/});
 });
