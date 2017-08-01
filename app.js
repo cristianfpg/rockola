@@ -5,7 +5,6 @@ var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var app = express();
 var http = require('http').Server(app);
-// var path = require('path');
 var io = require('socket.io')(http);
 var mongoose = require('mongoose');
 // var sha1 = require('sha1');
@@ -22,9 +21,8 @@ app.use(session({
 }));
 
 app.set('views', __dirname + '/views');
-app.set('view engine', 'jsx');
-var options = { beautify: true };
-app.engine('jsx', require('express-react-views').createEngine(options));
+app.set('view engine', 'pug');
+
 var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 // socket
@@ -67,8 +65,7 @@ var Usuario = mongoose.model('Usuario', usuarioSchema);
 // usuarioNuevo.save();
 
 // rutas get
-app.get('/', require('./routes').index);
-/*
+
 app.get('/', function(req, res){
   /*
   if(req.session.nombre){
@@ -79,20 +76,18 @@ app.get('/', function(req, res){
     // req.session.nombre = nombre;
     // res.send('Hola usuario desconocido. De ahora en adelante te llamaremos ' + nombre);
   }
-  *
+  */
 
   // Usuario.find({}, function(err, callback){
   //   res.render('IndexPrueba', {usuarios: callback});
   // });
-  res.render('pages/Prueba', {});
+  res.render('rockola', {});
 });
-*/
+
 app.get('/signin', function(req, res){
-  res.render('pages/SignIn', {/*prueba: 'listo!'*/});
 });
 
 app.get('/signup', function(req, res){
-  res.render('pages/SignUp', {/*prueba: 'listo!'*/});
 });
 
 app.get('/destroy',function(req, res){
