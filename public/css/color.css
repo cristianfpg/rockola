@@ -1,3 +1,21 @@
-*{
-  /*background: gray;*/
+.video{
+  display: inline-block;
+  position: relative;
+  width: 20%;
+  margin: 3%;
+}
+.video.false{
+  opacity: 0.2;
+}
+#columna{
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%;
+}
+#buscador{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
 }
