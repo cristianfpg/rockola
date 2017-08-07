@@ -1,103 +1,19 @@
 doctype html
 html(lang="es")
   head
-    title= pageTitle
     link(rel='stylesheet', href='/css/color.css')
   body
-    <div id="buscador"></div>
-    <div id="columna"> 
-      <iframe id="videoIframe" width="560" height="315" frameborder="0" allowfullscreen></iframe>
-      <div id="playlist"></div>
-    </div>
+    <div id="rockola"></div>
     script(src='https://unpkg.com/react@latest/dist/react.js')
     script(src='https://unpkg.com/react-dom@latest/dist/react-dom.js')
     script(src='https://unpkg.com/babel-standalone@6.15.0/babel.min.js')
     script(src='https://www.youtube.com/iframe_api')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.js')
-    script(src='js/rockola.js')
-    script(type='text/babel').
-      const apiKey = 'AIzaSyDKjZKBuDuPdqgpNZmqby6-iqKTJ66W8JU';
-      class Buscador extends React.Component {
-        constructor(props) {
-          super(props);
-          this.state = {value: '', videos: []};
-          this.handleChange = this.handleChange.bind(this);
-          this.handleSubmit = this.handleSubmit.bind(this);
-          this.handleClick = this.handleClick.bind(this);
-        }
-
-        handleChange(event) {      
-          this.setState({value: event.target.value});
-        }
-        
-        handleClick(event) {      
-          console.log('event');
-        }
-
-        handleSubmit(event) {
-          let listItems = [];
-          let filtros = [];
-          let thisH = this;
-          fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q='+thisH.state.value+'&key='+apiKey)
-            .then(function(response) {
-              return response.json();
-            }).then(function(json) {
-              for (var value of json.items) {
-                let url = value.snippet.thumbnails.default.url;
-                let titulo = value.snippet.title;
-                let id = value.id.videoId;
-                let valido = true;
-                if(!value.id.videoId) (id=titulo) && (valido = false);
-                filtros.push({
-                  titulo: titulo,
-                  id: id,
-                  url: url,
-                  valido : valido
-                });
-              }
-              listItems = filtros.map((filtro) =>
-                <a href="#" className={'video ' + filtro.valido} key={filtro.id}>
-                  <p>{filtro.titulo}</p>
-                  <img src={filtro.url}/>
-                </a>
-              );
-              thisH.setState({videos: listItems});
-            }).catch(function(ex) {
-              console.log('parsing failed', ex)
-            })
-          
-          event.preventDefault();
-        }
-        
-        handleClick(event) {      
-          this.setState({value: event.target.value});
-        }
-        render() {
-          return (
-            <div>
-              <form onSubmit={this.handleSubmit}>
-                <input type="text" value={this.state.value} onChange={this.handleChange}/>
-                <div>{this.state.videos}</div>
-                <input type="submit" value="submit"/>
-              </form>
-            </div>
-          );
-        }
-      }
-      class Playlist extends React.Component {
-        render() {
-          return (
-            <h1>EEEEEEsE</h1>
-          );
-        }
-      }
-      ReactDOM.render(
-        <Buscador />,
-        document.getElementById('buscador')
-      );
-      ReactDOM.render(
-        <Playlist />,
-        document.getElementById('playlist')
-      );
+    script(src='js/variables.js')
+    script(src='js/buscador.js' type='text/babel')
+    script(src='js/iframe.js' type='text/babel')
+    script(src='js/resultados.js' type='text/babel')
+    script(src='js/rockola.js' type='text/babel')
+    script(src='js/api.js')
     
     

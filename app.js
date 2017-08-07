@@ -9,8 +9,8 @@ var io = require('socket.io')(http);
 var mongoose = require('mongoose');
 // var sha1 = require('sha1');
 mongoose.Promise = require('bluebird');
-mongoose.connect('mongodb://192.168.0.252:27017/rockola'); // ipcolor
-// mongoose.connect('mongodb://localhost:27017/rockola');
+// mongoose.connect('mongodb://192.168.0.252:27017/rockola'); // ipcolor
+mongoose.connect('mongodb://localhost:27017/rockola',{useMongoClient: true});
 
 app.use(express.static('public'));
 app.use(cookieParser());
@@ -23,7 +23,7 @@ app.use(session({
 app.set('views', __dirname + '/views');
 app.set('view engine', 'pug');
 
-var urlencodedParser = bodyParser.urlencoded({ extended: false });
+var urlencodedParser = bodyParser.urlencoded({extended: true});
 
 // socket
 io.on('connection', function(socket){
@@ -55,7 +55,21 @@ var usuarioSchema = mongoose.Schema({
     required: true
   }
 });
+
+var songSchema = mongoose.Schema({
+  titulo: {
+    type: String,
+    required: true
+  },
+  url: {
+    type: String,
+    required: true,
+    unique: true
+  }
+});
+
 var Usuario = mongoose.model('Usuario', usuarioSchema);
+var Song = mongoose.model('Song', songSchema);
 
 // var usuarioNuevo = new Usuario({
 //   nombre: 'Cristian Pacheco',
@@ -64,8 +78,13 @@ var Usuario = mongoose.model('Usuario', usuarioSchema);
 // })
 // usuarioNuevo.save();
 
-// rutas get
+// var songNueva = new Song({
+//   titulo: 'video predeterminado',
+//   url: 'kfCkVaGttiM'
+// })
+// songNueva.save();
 
+// rutas get
 app.get('/', function(req, res){
   /*
   if(req.session.nombre){
@@ -81,7 +100,9 @@ app.get('/', function(req, res){
   // Usuario.find({}, function(err, callback){
   //   res.render('IndexPrueba', {usuarios: callback});
   // });
-  res.render('rockola', {});
+
+  res.render('rockola');
+
 });
 
 app.get('/signin', function(req, res){
@@ -121,7 +142,11 @@ app.post('/verificarusuario',urlencodedParser,function(req,res){
     res.redirect('/');
   });
 })
-
+app.get('/verplaylist',urlencodedParser,function(req,res){
+  Song.findOne({},function(err, callback){
+    res.json({titulo: callback.titulo, url: callback.url});
+  })
+})
 // puerto
 http.listen(3000, function(){
   console.log('listening on *:3000');
