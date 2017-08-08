@@ -7,19 +7,15 @@ class Iframe extends React.Component {
     );
   }
 }
-window.onload = function(){
 
-}
-
-var pruebaurl;
-fetch('http://localhost:3000/verplaylist')
+var urlId;
+fetch('/verplaylist')
   .then(function(response) {
     return response.json();
   }).then(function(json) {
-    pruebaurl = json.url;
-    console.log(pruebaurl)
+    urlId = json[0].url;
     var videoIframe = document.getElementById('videoIframe');
-    videoIframe.src = 'https://www.youtube.com/embed/'+pruebaurl+'?rel=0&autoplay=0&controls=1&enablejsapi=1';
+    videoIframe.src = 'https://www.youtube.com/embed/'+urlId+'?rel=0&autoplay=0&controls=1&enablejsapi=1';
 
     var player;
     function onYouTubeIframeAPIReady() {

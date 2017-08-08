@@ -23,7 +23,9 @@ app.use(session({
 app.set('views', __dirname + '/views');
 app.set('view engine', 'pug');
 
-var urlencodedParser = bodyParser.urlencoded({extended: true});
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }))
+// var urlencodedParser = bodyParser.urlencoded({extended: false});
 
 // socket
 io.on('connection', function(socket){
@@ -78,11 +80,13 @@ var Song = mongoose.model('Song', songSchema);
 // })
 // usuarioNuevo.save();
 
-// var songNueva = new Song({
-//   titulo: 'video predeterminado',
-//   url: 'kfCkVaGttiM'
-// })
-// songNueva.save();
+function songNuevaFunc(data){
+  var songNueva = new Song({
+    titulo: data.titulo,
+    url: data.url
+  })
+  songNueva.save();
+}
 
 // rutas get
 app.get('/', function(req, res){
@@ -117,7 +121,7 @@ app.get('/destroy',function(req, res){
 });
 
 // rutas post
-app.post('/nuevousuario',urlencodedParser,function(req,res){
+app.post('/nuevousuario',function(req,res){
   var usuarioNuevo = new Usuario({
     nombre: req.body.nombre,
     email: req.body.email,
@@ -127,7 +131,7 @@ app.post('/nuevousuario',urlencodedParser,function(req,res){
   res.redirect('/');
 })
 
-app.post('/verificarusuario',urlencodedParser,function(req,res){
+app.post('/verificarusuario',function(req,res){
   Usuario.find({email: req.body.email}, function(err, callback){
     if(err){
       console.log('err');
@@ -142,10 +146,32 @@ app.post('/verificarusuario',urlencodedParser,function(req,res){
     res.redirect('/');
   });
 })
-app.get('/verplaylist',urlencodedParser,function(req,res){
-  Song.findOne({},function(err, callback){
-    res.json({titulo: callback.titulo, url: callback.url});
+app.get('/verplaylist',function(req,res){
+  Song.find({},function(err, callback){
+    var songs = [];
+    callback.forEach(function(song,index) {
+      songs.push({
+        titulo: song.titulo,
+        url: song.url
+      });
+    });
+    res.json(songs);
   })
+})
+app.post('/agregaraplaylist',function(req,res){
+  Song.find({url: req.body.url},function(err, callback){
+    console.log(callback.length)
+    if(callback.length > 0) {
+      console.log('existe');
+      res.json({respuesta: 'existe'});
+    }else{
+      songNuevaFunc({
+        titulo: req.body.titulo,
+        url: req.body.url
+      });
+      res.json({respuesta: 'creado'});
+    }
+  });
 })
 // puerto
 http.listen(3000, function(){

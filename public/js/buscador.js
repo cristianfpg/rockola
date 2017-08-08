@@ -14,12 +14,12 @@ class Buscador extends React.Component {
     let listItems = [];
     let filtros = [];
     let thisH = this;
-    fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=20&q='+thisH.state.value+'&key='+apiKey)
+    fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=15&q='+thisH.state.value+'&key='+apiKey)
       .then(function(response) {
         return response.json();
       }).then(function(json) {
         for (var value of json.items) {
-          let url = value.snippet.thumbnails.default.url;
+          let thumbnail = value.snippet.thumbnails.default.url;
           let titulo = value.snippet.title;
           let id = value.id.videoId;
           let valido = true;
@@ -27,16 +27,18 @@ class Buscador extends React.Component {
           filtros.push({
             titulo: titulo,
             id: id,
-            url: url,
+            thumbnail: thumbnail,
             valido : valido
           });
         }
         listItems = filtros.map((filtro) =>
-          <div className={'video ' + filtro.valido} key={filtro.id}>
-            <p>{filtro.titulo}</p>
-            <p>{filtro.id}</p>
-            <img src={filtro.url}/>
-          </div>
+          <Cancion 
+            valido={filtro.valido}
+            videoId={filtro.id}
+            key={filtro.id}
+            titulo={filtro.titulo}
+            thumbnail={filtro.thumbnail}
+          />
         );
         thisH.props.listItems(listItems);
       }).catch(function(ex) {

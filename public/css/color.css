@@ -3,6 +3,7 @@
   position: relative;
   width: 20%;
   margin: 3%;
+  cursor: pointer;
 }
 .video.false{
   opacity: 0.2;
