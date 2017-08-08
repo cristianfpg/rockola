@@ -13,6 +13,7 @@ class Rockola extends React.Component {
         <Buscador listItems={this.handleUpdate}/>
         <Iframe/>
         <Resultados lista={this.state.resultados}/>
+        <Playlist/>
       </div>
     );
   }

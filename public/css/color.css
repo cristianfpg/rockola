@@ -8,3 +8,9 @@
 .video.false{
   opacity: 0.2;
 }
+#playlist{
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 300px;
+}

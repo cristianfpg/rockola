@@ -1,6 +1,5 @@
 class Iframe extends React.Component {
-  handleVerUltimo(event){
-  }
+
   render() {
     return (
       <iframe id="videoIframe" width="560" height="315" frameBorder="0" allowFullScreen></iframe>
@@ -8,14 +7,12 @@ class Iframe extends React.Component {
   }
 }
 
-var urlId;
 fetch('/verplaylist')
   .then(function(response) {
     return response.json();
   }).then(function(json) {
-    urlId = json[0].url;
     var videoIframe = document.getElementById('videoIframe');
-    videoIframe.src = 'https://www.youtube.com/embed/'+urlId+'?rel=0&autoplay=0&controls=1&enablejsapi=1';
+    videoIframe.src = 'https://www.youtube.com/embed/'+json[0].url+'?rel=0&autoplay=0&controls=1&enablejsapi=1';
 
     var player;
     function onYouTubeIframeAPIReady() {
@@ -29,5 +26,5 @@ fetch('/verplaylist')
       // console.log(e);
     }
   }).catch(function(ex) {
-    console.log('parsing failed', ex)
+    alert('no hay canciones en la playlist');
   })
