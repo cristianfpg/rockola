@@ -29,11 +29,15 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 // socket
 io.on('connection', function(socket){
-  console.log('a user connected');
+  socket.on('update playlist', function(msg){
+    console.log('message: ' + msg);
+    io.emit('update playlist', 'desde node');
+  });
   socket.on('disconnect', function(){
     console.log('user disconnected');
   });
 });
+
 // mongoose
 var db = mongoose.connection;
 

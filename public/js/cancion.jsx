@@ -18,7 +18,10 @@ class Cancion extends React.Component {
       .then(function(res) {
         return res.json();
       }).then(function(json) {
-        thisH.props.agregar(json);
+        if(json.respuesta == 'creado'){
+          thisH.props.agregar(json);
+          socket.emit('update playlist', json);
+        }
       }).catch(function(ex) {
         console.log('parsing failed', ex)
       });

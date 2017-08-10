@@ -1,3 +1,14 @@
+var socket = io();
+
+var apiKey = 'AIzaSyDKjZKBuDuPdqgpNZmqby6-iqKTJ66W8JU';
+var tag = document.createElement('script');
+tag.src = "https://www.youtube.com/iframe_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+var player;
+var videoActual;
+var primeraVez = true;
+
 function fetchFunc(endpoint,response){
   fetch(endpoint)
     .then(function(response) {
@@ -26,15 +37,6 @@ function fetchPostFunc(endpoint, object){
     });
 }
 
-var apiKey = 'AIzaSyDKjZKBuDuPdqgpNZmqby6-iqKTJ66W8JU';
-var tag = document.createElement('script');
-tag.src = "https://www.youtube.com/iframe_api";
-var firstScriptTag = document.getElementsByTagName('script')[0];
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-var player;
-
-var videoActual;
-var primeraVez = true;
 function updateActualFunc(){
   fetchFunc('/verplaylist',function(json){
     videoActual = {url: json[0].url, id: json[0]._id, thumbnail: json[0].thumbnail};
@@ -69,7 +71,7 @@ function onPlayerStateChange(event) {
     fetchPostFunc('/borrarcancion', {iduno: videoActual.id})
     location = location;
   // },15000);
-  },360000);
+  },480000);
   if(event.data == 0) {
     fetchPostFunc('/borrarcancion', {iduno: videoActual.id})
     location = location;

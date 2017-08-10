@@ -20,7 +20,7 @@ class Buscador extends React.Component {
     let filtros = [];
     let thisH = this;
     let baseQuery = 'https://www.googleapis.com/youtube/v3/search?q=';
-    let parametros = '&part=snippet&maxResults=15&type=video&videoDuration=medium&videoEmbeddable=true&videoDimension=2d&videoLicense=youtube&key='+apiKey;
+    let parametros = '&part=snippet&maxResults=15&key='+apiKey;
     let queryKeyword = baseQuery+thisH.state.value+parametros;
     fetch(queryKeyword)
       .then(function(response) {

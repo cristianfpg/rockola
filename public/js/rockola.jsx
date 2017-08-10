@@ -30,8 +30,12 @@ class Rockola extends React.Component {
   componentWillMount(){
     let thisH = this;
     updatePlaylistFunc(thisH);
+    socket.on('update playlist', function(msg){
+      updatePlaylistFunc(thisH);
+      console.log('control');
+    });
   }
-  handleAgregar() {
+  handleAgregar(event) {
     let thisH = this;
     updatePlaylistFunc(thisH);
   }
