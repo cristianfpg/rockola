@@ -5,9 +5,6 @@
   margin: 3%;
   cursor: pointer;
 }
-.video.false{
-  opacity: 0.2;
-}
 #playlist{
   position: absolute;
   top: 0;

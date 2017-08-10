@@ -13,7 +13,7 @@ class Cancion extends React.Component {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({titulo: this.props.titulo, url: this.props.videoId})
+      body: JSON.stringify({titulo: this.props.titulo, url: this.props.videoId, thumbnail: this.props.thumbnail})
     })
       .then(function(res) {
         return res.json();
@@ -25,9 +25,8 @@ class Cancion extends React.Component {
   }
   render() {
     return (
-      <div className={'video ' + this.props.valido} onClick={this.addToPlaylist}>
+      <div className='video' onClick={this.addToPlaylist}>
         <p>{this.props.titulo}</p>
-        <p>{this.props.videoId}</p>
         <img src={this.props.thumbnail}/>
       </div>
     );

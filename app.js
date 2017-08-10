@@ -65,8 +65,11 @@ var songSchema = mongoose.Schema({
   },
   url: {
     type: String,
-    required: true,
-    unique: true
+    required: true
+  },
+  thumbnail: {
+    type: String,
+    required: true
   }
 });
 
@@ -83,7 +86,8 @@ var Song = mongoose.model('Song', songSchema);
 function songNuevaFunc(data){
   var songNueva = new Song({
     titulo: data.titulo,
-    url: data.url
+    url: data.url,
+    thumbnail: data.thumbnail
   })
   songNueva.save();
 }
@@ -158,7 +162,8 @@ app.post('/agregaraplaylist',function(req,res){
     }else{
       songNuevaFunc({
         titulo: req.body.titulo,
-        url: req.body.url
+        url: req.body.url,
+        thumbnail: req.body.thumbnail
       });
       res.json({respuesta: 'creado'});
     }
@@ -169,6 +174,14 @@ app.post('/borrarcancion',function(req,res){
     if(err){
       res.json({respuesta: 'error al borrar cancion'});
     }else{
+      Song.count({},function(err, callback){
+        if(callback == 0){
+          songNuevaFunc({
+            titulo: 'no hay canciones en la playlist',
+            url: '_Uie2r5wWxw'
+          });
+        }
+      })
       res.json({respuesta: 'borrado'});
     }
   })
