@@ -1,13 +1,15 @@
+// fetchFunc('https://www.googleapis.com/youtube/v3/videos?id=ebhoaxFyDuM&part=contentDetails&key='+apiKey,function(json){
+//   console.log(json);
+// })
 class Cancion extends React.Component {
   constructor(props) {
     super(props);
     this.addToPlaylist = this.addToPlaylist.bind(this);
   }
-
   addToPlaylist(event){
-    console.log()
-    fetch('/agregaraplaylist', { 
-      method: 'POST', 
+    let thisH = this;
+    fetch('/agregaraplaylist', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -16,7 +18,7 @@ class Cancion extends React.Component {
       .then(function(res) {
         return res.json();
       }).then(function(json) {
-        console.log(json);
+        thisH.props.agregar(json);
       }).catch(function(ex) {
         console.log('parsing failed', ex)
       });

@@ -4,12 +4,17 @@ class Buscador extends React.Component {
     this.state = {value: '', videos: []};
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleAgregar = this.handleAgregar.bind(this);
   }
 
-  handleChange(event) {      
+  handleChange(event) {
     this.setState({value: event.target.value});
   }
-  
+
+  handleAgregar(event) {
+    this.props.agregar(event);
+  }
+
   handleSubmit(event) {
     let listItems = [];
     let filtros = [];
@@ -18,6 +23,7 @@ class Buscador extends React.Component {
       .then(function(response) {
         return response.json();
       }).then(function(json) {
+        console.log(json);
         for (var value of json.items) {
           let thumbnail = value.snippet.thumbnails.default.url;
           let titulo = value.snippet.title;
@@ -32,22 +38,23 @@ class Buscador extends React.Component {
           });
         }
         listItems = filtros.map((filtro) =>
-          <Cancion 
+          <Cancion
             valido={filtro.valido}
             videoId={filtro.id}
             key={filtro.id}
             titulo={filtro.titulo}
             thumbnail={filtro.thumbnail}
+            agregar={thisH.handleAgregar}
           />
         );
         thisH.props.listItems(listItems);
       }).catch(function(ex) {
         console.log('parsing failed', ex)
       })
-    
+
     event.preventDefault();
   }
-  
+
   render() {
     return (
       <form id="buscador" onSubmit={this.handleSubmit}>

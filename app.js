@@ -148,21 +148,12 @@ app.post('/verificarusuario',function(req,res){
 })
 app.get('/verplaylist',function(req,res){
   Song.find({},function(err, callback){
-    var songs = [];
-    callback.forEach(function(song,index) {
-      songs.push({
-        titulo: song.titulo,
-        url: song.url
-      });
-    });
-    res.json(songs);
+    res.json(callback);
   })
 })
 app.post('/agregaraplaylist',function(req,res){
   Song.find({url: req.body.url},function(err, callback){
-    console.log(callback.length)
     if(callback.length > 0) {
-      console.log('existe');
       res.json({respuesta: 'existe'});
     }else{
       songNuevaFunc({
@@ -172,6 +163,15 @@ app.post('/agregaraplaylist',function(req,res){
       res.json({respuesta: 'creado'});
     }
   });
+})
+app.post('/borrarcancion',function(req,res){
+  Song.findByIdAndRemove(req.body.iduno,{},function(err, callback){
+    if(err){
+      res.json({respuesta: 'error al borrar cancion'});
+    }else{
+      res.json({respuesta: 'borrado'});
+    }
+  })
 })
 // puerto
 http.listen(3000, function(){
