@@ -18,7 +18,7 @@ class Cancion extends React.Component {
       .then(function(res) {
         return res.json();
       }).then(function(json) {
-        if(json.respuesta == 'creado'){
+        if(json.respuesta == 'activada'){
           thisH.props.agregar(json);
           socket.emit('update playlist', json);
         }

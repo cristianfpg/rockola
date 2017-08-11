@@ -68,12 +68,12 @@ function onPlayerReady(event) {
 function onPlayerStateChange(event) {
   console.log(event.data);
   setTimeout(function(){
-    fetchPostFunc('/borrarcancion', {iduno: videoActual.id})
+    fetchPostFunc('/borrarcancion', {url: videoActual.url})
     location = location;
   // },15000);
   },480000);
   if(event.data == 0) {
-    fetchPostFunc('/borrarcancion', {iduno: videoActual.id})
+    fetchPostFunc('/borrarcancion', {url: videoActual.url})
     location = location;
   }
 }

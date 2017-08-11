@@ -1,7 +1,7 @@
 class Playlist extends React.Component {
   render() {
     return (
-      <ul id="playlist">{this.props.playlist}</ul>
+      <div id="playlist">{this.props.playlist}</div>
     );
   }
 }

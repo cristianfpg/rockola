@@ -9,10 +9,10 @@ function updatePlaylistFunc(thisH){
       filtros.push({titulo: titulo, url: url, id: id});
     }
     listItems = filtros.map((filtro) =>
-      <li key={filtro.url}>
-        <p>{filtro.titulo}</p>
-        <p>{filtro.url}</p>
-      </li>
+      <div className="playlist-item" key={filtro.url}>
+        <p className="playlist-titulo">{filtro.titulo}</p>
+        <Votos idCancion={filtro.id}/>
+      </div>
     );
     thisH.setState({playlist: listItems});
   });
@@ -32,7 +32,6 @@ class Rockola extends React.Component {
     updatePlaylistFunc(thisH);
     socket.on('update playlist', function(msg){
       updatePlaylistFunc(thisH);
-      console.log('control');
     });
   }
   handleAgregar(event) {

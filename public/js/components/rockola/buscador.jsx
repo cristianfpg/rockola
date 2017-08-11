@@ -4,8 +4,8 @@ class Buscador extends React.Component {
     this.state = {value: '', valueID: '', videos: []};
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleChangeID = this.handleChangeID.bind(this);
-    this.handleSubmitID = this.handleSubmitID.bind(this);
+    // this.handleChangeID = this.handleChangeID.bind(this);
+    // this.handleSubmitID = this.handleSubmitID.bind(this);
     this.handleAgregar = this.handleAgregar.bind(this);
   }
 
@@ -54,39 +54,39 @@ class Buscador extends React.Component {
 
     event.preventDefault();
   }
-  handleChangeID(event) {
-    this.setState({valueID: event.target.value});
-  }
-  handleSubmitID(event) {
-    let baseQuery = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=';
-    let finQuery = '&key='+apiKey;
-    let url = this.state.valueID;
-    let thisH = this;
-    fetch(baseQuery+url+finQuery)
-      .then(function(response) {
-        return response.json();
-      }).then(function(json) {
-        let titulo = json.items[0].snippet.title;
-        let thumbnail = json.items[0].snippet.thumbnails.high.url;
-        thisH.props.listItems(
-          <Cancion
-            key={url}
-            titulo={titulo}
-            thumbnail={thumbnail}
-            agregar={thisH.handleAgregar}
-          />
-        );
-      }).catch(function(ex) {
-        thisH.props.listItems(<p>Este id no existe</p>);
-        console.log('parsing failed', ex);
-      })
-    event.preventDefault();
-  }
+  // handleChangeID(event) {
+  //   this.setState({valueID: event.target.value});
+  // }
+  // handleSubmitID(event) {
+  //   let baseQuery = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=';
+  //   let finQuery = '&key='+apiKey;
+  //   let url = this.state.valueID;
+  //   let thisH = this;
+  //   fetch(baseQuery+url+finQuery)
+  //     .then(function(response) {
+  //       return response.json();
+  //     }).then(function(json) {
+  //       let titulo = json.items[0].snippet.title;
+  //       let thumbnail = json.items[0].snippet.thumbnails.high.url;
+  //       thisH.props.listItems(
+  //         <Cancion
+  //           key={url}
+  //           titulo={titulo}
+  //           thumbnail={thumbnail}
+  //           agregar={thisH.handleAgregar}
+  //         />
+  //       );
+  //     }).catch(function(ex) {
+  //       thisH.props.listItems(<p>Este id no existe</p>);
+  //       console.log('parsing failed', ex);
+  //     })
+  //   event.preventDefault();
+  // }
   render() {
     return (
       <div>
         <form id="buscadorkeyword" onSubmit={this.handleSubmit}>
-          <input type="text" onChange={(e) => this.handleChange(e,'keyword')} placeholder="palabra clave"/>
+          <input type="text" onChange={this.handleChange} placeholder="palabra clave"/>
           <input type="submit" value="submit"/>
         </form>
         {/*
