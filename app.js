@@ -30,7 +30,6 @@ app.use(bodyParser.urlencoded({ extended: false }))
 // socket
 io.on('connection', function(socket){
   socket.on('update playlist', function(msg){
-    console.log('message: ' + msg);
     io.emit('update playlist', 'desde node');
   });
   // socket.on('disconnect', function(){
@@ -43,7 +42,7 @@ var db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
-  // console.log('conectado')
+  // conectado
 });
 
 var usuarioSchema = mongoose.Schema({
@@ -174,66 +173,63 @@ app.post('/verificarusuario',function(req,res){
     res.redirect('/');
   });
 })
+
 app.get('/verplaylist',function(req,res){
   Song.find({activa: true},function(err, callback){
-    res.json(callback);
+    // para revisar
+    var porid = callback.slice(0);
+    porid.sort(function(a,b) {
+      return a.idplaylist - b.idplaylist;
+    });
+    res.json(porid);
   })
 })
 app.post('/agregaraplaylist',function(req,res){
-  Song.find({url: req.body.url},function(err, callback){
-    var lengthSongs = callback.length;
-    if(lengthSongs == 0) {
-      songNuevaFunc({
-        titulo: req.body.titulo,
-        url: req.body.url,
-        thumbnail: req.body.thumbnail,
-        idplaylist: lengthSongs
-      });
-      res.json({respuesta: 'activada'});
-    }else{
-      if(!callback.activa){
-        Song.update({url: req.body.url},{ activa: true},{idplaylist: lengthSongs},function(err, callback){
-        })
-        res.json({respuesta: 'activada'});
+  Song.find({},function(err, callback){
+    // para revisar
+    var porid = callback.slice(0);
+    porid.sort(function(a,b) {
+      return a.idplaylist - b.idplaylist;
+    });
+    var lengthSongs = porid[porid.length - 1].idplaylist +1;
+    console.log(lengthSongs);
+    Song.find({url: req.body.url},function(err, callback){
+      if(callback.length == 0) {
+        songNuevaFunc({
+          titulo: req.body.titulo,
+          url: req.body.url,
+          thumbnail: req.body.thumbnail,
+          idplaylist: lengthSongs
+        });
+        res.json({respuesta: 'creada'});
       }else{
-        res.json({respuesta: 'esta en playlist'});
+        if(!callback[0].activa){
+          Song.update({url: req.body.url},{$set:{ activa: true, idplaylist: lengthSongs}},function(err, callback){
+          })
+          res.json({respuesta: 'activada'});
+        }else{
+          res.json({respuesta: 'esta en playlist'});
+        }
       }
-    }
+    });
   });
 })
 app.post('/borrarcancion',function(req,res){
-  console.log(req.body);
   Song.update({url: req.body.url},{ activa: false },function(err, callback){
-    if(err){
+    if(err || callback.nModified == 0){
       res.json({respuesta: 'error al desactivar cancion'});
     }else{
       Song.find({activa: true},function(err, callback){
         if(callback.length==0){
           Song.update({titulo: tituloDefault},{activa: true},function(err, callback){
-
+            res.json({respuesta: 'no hay mas canciones'});
           })
+        }else{
+          res.json({respuesta: 'desactivada'});
         }
       })
-      res.json({respuesta: 'desactivada'});
     }
   })
-
-  // Song.findByIdAndRemove(req.body.iduno,{},function(err, callback){
-  //   if(err){
-  //     res.json({respuesta: 'error al borrar cancion'});
-  //   }else{
-  //     Song.count({},function(err, callback){
-  //       if(callback == 0){
-  //         // songNuevaFunc({
-  //         //   titulo: 'no hay canciones en la playlist',
-  //         //   url: '_Uie2r5wWxw',
-  //         //   thumbnail: 'http://cdn01.ib.infobae.com/adjuntos/162/imagenes/014/014/0014014674.jpg',
-  //         // });
-  //       }
-  //     })
-  //     res.json({respuesta: 'borrado'});
-  //   }
-  // })
 })
 // puerto
 http.listen(3000, function(){
