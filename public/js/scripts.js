@@ -20,7 +20,7 @@ function fetchFunc(endpoint,response){
     })
 }
 
-function fetchPostFunc(endpoint, object){
+function fetchPostFunc(endpoint, object, response){
   fetch(endpoint, {
     method: 'POST',
     headers: {
@@ -32,6 +32,7 @@ function fetchPostFunc(endpoint, object){
       return res.json();
     }).then(function(json) {
       // console.log('listo');
+      response(json);
     }).catch(function(ex) {
       console.log('parsing failed', ex)
     });
@@ -68,12 +69,12 @@ function onPlayerReady(event) {
 function onPlayerStateChange(event) {
   console.log(event.data);
   setTimeout(function(){
-    fetchPostFunc('/borrarcancion', {url: videoActual.url})
+    fetchPostFunc('/borrarcancion', {url: videoActual.url}, function(){console.log('cambio')})
     location = location;
   // },15000);
   },480000);
   if(event.data == 0) {
-    fetchPostFunc('/borrarcancion', {url: videoActual.url})
+    fetchPostFunc('/borrarcancion', {url: videoActual.url}, function(){console.log('cambio')})
     location = location;
   }
 }

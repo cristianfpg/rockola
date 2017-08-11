@@ -21,6 +21,18 @@
 .playlist-btns{
   display: inline-block;
 }
+.playlist-btns.false .playlist-btn.like:hover{
+  background: green;
+}
+.playlist-btns.false .playlist-btn.dislike:hover{
+  background: red;
+}
+.playlist-btns.true{
+  opacity: 0.5;
+}
+.playlist-btns.true .playlist-btn{
+  cursor: initial;
+}
 .playlist-btn{
   width: 20px;
   height: 20px;
@@ -38,6 +50,6 @@
 .playlist-btn.like.active{
   background: green;
 }
-.playlist-btn.unlike.active{
+.playlist-btn.dislike.active{
   background: red;
 }
