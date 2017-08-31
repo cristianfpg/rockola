@@ -100,7 +100,9 @@ Song.find({titulo: tituloDefault},function(err, callback){
     });
   }
 })
-
+// Song.find({}, function(err, callback){
+//   console.log(callback);
+// })
 // rutas get
 app.get('/', function(req, res){
   /*
@@ -114,43 +116,17 @@ app.get('/', function(req, res){
   }
   */
 
-  // Usuario.find({}, function(err, callback){
-  //   res.render('IndexPrueba', {usuarios: callback});
-  // });
-
-  // res.render('rockola');
-  if(req.session.email){
-    res.send(req.session.email);
-  }else{
-    res.json('no esta logueado');
-    // var nombre = 'Tito';
-    // req.session.nombre = nombre;
-    // res.send('Hola usuario desconocido. De ahora en adelante te llamaremos ' + nombre);
-  }
+  res.render('rockola');
 });
 
-app.get('/rockola', function(req, res){
-  if(req.session.email){
-    res.render('rockola');
-  }else{
-    res.json('no esta logueado');
-  }
-  console.log('req.session.email');
-  console.log(req.session.email);
-});
+// app.get('/rockola', function(req, res){
+// });
 
-app.get('/signin', function(req, res){
-  req.session.email = primerEmail;
-  participante = req.session.email;
-  console.log('desde /signin');
-  console.log(participante);
-  res.json(req.session.email);
-});
+// app.get('/signin', function(req, res){
+// });
 
-app.get('/destroy',function(req, res){
-  req.session.destroy();
-  res.json('adios!');
-});
+// app.get('/destroy',function(req, res){
+// });
 
 // rutas usuarios
 app.get('/verusuarios',function(req,res){
@@ -230,7 +206,6 @@ app.post('/agregaraplaylist',function(req,res){
       }
     });
   });
-  console.log(req.session.email);
 })
 app.post('/borrarcancion',function(req,res){
   Song.update({url: req.body.url},{$set:{ activa: false }},function(err, callback){
@@ -251,34 +226,33 @@ app.post('/borrarcancion',function(req,res){
 })
 // voto
 app.post('/votacion',function(req,res){
-  var voto = req.body.voto;
-  console.log('desde /votacion');
-  console.log(req.session);
-  Song.find({url: req.body.url},function(err, callback){
-    var participantes = callback[0].participantes;
-    function checkPart(persona){
-      return persona == participante;
-    }
-    if(!participantes.find(checkPart) && participante){
-      participantes.push(participante);
-      Song.update({url: req.body.url},{$set:{ participantes: participantes }},function(err, callback){
-        if(voto == 'like'){
-          Song.update({url: req.body.url},{$inc:{ like: 1 }},function(err, callback){
-          })
-        }else{
-          Song.update({url: req.body.url},{$inc:{ dislike: 1 }},function(err, callback){
-          })
-        }
-        res.json({respuesta: 'voto_correcto'});
-      })
-    }else{
-      if(!participante){
-        res.json({respuesta: 'no_esta_logueado'});
-      }else{
-        res.json({respuesta: 'en_lista'});
-      }
-    }
-  })
+  console.log(req.body.url);
+  console.log(req.body.voto);
+  // Song.find({url: req.body.url},function(err, callback){
+  //   var participantes = callback[0].participantes;
+  //   function checkPart(persona){
+  //     return persona == participante;
+  //   }
+  //   if(!participantes.find(checkPart) && participante){
+  //     participantes.push(participante);
+  //     Song.update({url: req.body.url},{$set:{ participantes: participantes }},function(err, callback){
+  //       if(voto == 'like'){
+  //         Song.update({url: req.body.url},{$inc:{ like: 1 }},function(err, callback){
+  //         })
+  //       }else{
+  //         Song.update({url: req.body.url},{$inc:{ dislike: 1 }},function(err, callback){
+  //         })
+  //       }
+  //       res.json({respuesta: 'voto_correcto'});
+  //     })
+  //   }else{
+  //     if(!participante){
+  //       res.json({respuesta: 'no_esta_logueado'});
+  //     }else{
+  //       res.json({respuesta: 'en_lista'});
+  //     }
+  //   }
+  // })
 })
 
 // puerto

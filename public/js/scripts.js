@@ -31,7 +31,6 @@ function fetchPostFunc(endpoint, object, response){
     .then(function(res) {
       return res.json();
     }).then(function(json) {
-      // console.log('listo');
       response(json);
     }).catch(function(ex) {
       console.log('parsing failed', ex)
@@ -62,17 +61,15 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerReady(event) {
   event.target.playVideo();
-  // document.getElementById('iframeimg').src = videoActual.thumbnail;
   console.log(videoActual.url);
 }
 
 function onPlayerStateChange(event) {
   console.log(event.data);
-  setTimeout(function(){
-    fetchPostFunc('/borrarcancion', {url: videoActual.url}, function(){console.log('cambio')})
-    location = location;
-  // },15000);
-  },480000);
+  // setTimeout(function(){
+  //   fetchPostFunc('/borrarcancion', {url: videoActual.url}, function(){console.log('cambio')})
+  //   location = location;
+  // },480000);
   if(event.data == 0) {
     fetchPostFunc('/borrarcancion', {url: videoActual.url}, function(){console.log('cambio')})
     location = location;

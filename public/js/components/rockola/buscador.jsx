@@ -22,8 +22,8 @@ class Buscador extends React.Component {
     let baseQuery = 'https://www.googleapis.com/youtube/v3/search?q=';
     // let parametros = '&part=snippet&maxResults=15&type=video&videoDuration=medium&videoEmbeddable=true&videoDimension=2d&videoLicense=youtube&key='+apiKey;
     let parametros = '&part=snippet&maxResults=15&type=video&videoEmbeddable=true&videoDimension=2d&videoLicense=youtube&key='+apiKey;
-    let queryKeyword = baseQuery+thisH.state.value+parametros;
-    fetch(queryKeyword)
+    let getQuery = baseQuery+thisH.state.value+parametros;
+    fetch(getQuery)
       .then(function(response) {
         return response.json();
       }).then(function(json) {

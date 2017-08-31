@@ -11,7 +11,9 @@ function updatePlaylistFunc(thisH){
     listItems = filtros.map((filtro) =>
       <div className="playlist-item" key={filtro.url}>
         <p className="playlist-titulo">{filtro.titulo}</p>
+        {/*
         <Votos url={filtro.url}/>
+        */}
       </div>
     );
     thisH.setState({playlist: listItems});
