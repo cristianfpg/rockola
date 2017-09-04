@@ -4,8 +4,6 @@ class Buscador extends React.Component {
     this.state = {value: '', valueID: '', videos: []};
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    // this.handleChangeID = this.handleChangeID.bind(this);
-    // this.handleSubmitID = this.handleSubmitID.bind(this);
     this.handleAgregar = this.handleAgregar.bind(this);
   }
 
@@ -20,7 +18,6 @@ class Buscador extends React.Component {
     let filtros = [];
     let thisH = this;
     let baseQuery = 'https://www.googleapis.com/youtube/v3/search?q=';
-    // let parametros = '&part=snippet&maxResults=15&type=video&videoDuration=medium&videoEmbeddable=true&videoDimension=2d&videoLicense=youtube&key='+apiKey;
     let parametros = '&part=snippet&maxResults=15&type=video&videoEmbeddable=true&videoDimension=2d&videoLicense=youtube&key='+apiKey;
     let getQuery = baseQuery+thisH.state.value+parametros;
     fetch(getQuery)
@@ -54,34 +51,6 @@ class Buscador extends React.Component {
 
     event.preventDefault();
   }
-  // handleChangeID(event) {
-  //   this.setState({valueID: event.target.value});
-  // }
-  // handleSubmitID(event) {
-  //   let baseQuery = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=';
-  //   let finQuery = '&key='+apiKey;
-  //   let url = this.state.valueID;
-  //   let thisH = this;
-  //   fetch(baseQuery+url+finQuery)
-  //     .then(function(response) {
-  //       return response.json();
-  //     }).then(function(json) {
-  //       let titulo = json.items[0].snippet.title;
-  //       let thumbnail = json.items[0].snippet.thumbnails.high.url;
-  //       thisH.props.listItems(
-  //         <Cancion
-  //           key={url}
-  //           titulo={titulo}
-  //           thumbnail={thumbnail}
-  //           agregar={thisH.handleAgregar}
-  //         />
-  //       );
-  //     }).catch(function(ex) {
-  //       thisH.props.listItems(<p>Este id no existe</p>);
-  //       console.log('parsing failed', ex);
-  //     })
-  //   event.preventDefault();
-  // }
   render() {
     return (
       <div>
@@ -89,12 +58,6 @@ class Buscador extends React.Component {
           <input type="text" onChange={this.handleChange} placeholder="palabra clave"/>
           <input type="submit" value="submit"/>
         </form>
-        {/*
-        <form id="buscadorid" onSubmit={this.handleSubmitID}>
-          <input type="text" onChange={this.handleChangeID} placeholder="id"/>
-          <input type="submit" value="submit"/>
-        </form>
-        */}
       </div>
     );
   }

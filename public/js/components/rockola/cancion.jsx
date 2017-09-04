@@ -8,42 +8,54 @@ class Cancion extends React.Component {
     let baseQuery = 'https://www.googleapis.com/youtube/v3/videos?id=';
     let parametros = '&part=contentDetails&key='+apiKey;
     let getQuery = baseQuery+videoId+parametros;
+    let thisH = this;
     fetch(getQuery)
       .then(function(response) {
         return response.json();
       }).then(function(json) {
-        var texto = json.items[0].contentDetails.duration+'';
-        function tiempoFunc(duration) {
-          var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/)
-
-          var hours = (parseInt(match[1]) || 0);
-          var minutes = (parseInt(match[2]) || 0);
-          var seconds = (parseInt(match[3]) || 0);
-          console.log(hours+' '+minutes+' '+seconds)
-          // return hours * 3600 + minutes * 60 + seconds;
+        var duration = json.items[0].contentDetails.duration+'';
+        var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+        if(!match){
+          alert('El video debe durar de '+(duracionMin/60)+' a '+(duracionMax/60)+' min');
+          return false;
+        } 
+        var hours = (parseInt(match[1]) || 0);
+        var minutes = (parseInt(match[2]) || 0);
+        var seconds = (parseInt(match[3]) || 0);
+        var totalSegundos = seconds + (minutes*60) + (hours*3600);
+        
+        if(totalSegundos >= duracionMin && totalSegundos <= duracionMax){
+          fetch('/agregaraplaylist', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              titulo: thisH.props.titulo, 
+              url: thisH.props.videoId, 
+              thumbnail: thisH.props.thumbnail,
+              duracion: totalSegundos
+            })
+          })
+          .then(function(res) {
+            return res.json();
+          }).then(function(json) {
+            if(json.respuesta == 'creada' || json.respuesta == 'activada'){
+              thisH.props.agregar(json);
+              socket.emit('update playlist');
+              alert('hecho!')
+            }else{
+              alert('ya esta en la playlist')
+            }
+          }).catch(function(ex) {
+            console.log('parsing failed', ex)
+          });
+        }else{
+          alert('El video debe durar de '+(duracionMin/60)+' a '+(duracionMax/60)+' min');
         }
-        tiempoFunc(texto);
       }).catch(function(ex) {
         console.log('parsing failed', ex)
       })
-    // let thisH = this;
-    // fetch('/agregaraplaylist', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify({titulo: this.props.titulo, url: this.props.videoId, thumbnail: this.props.thumbnail})
-    // })
-    //   .then(function(res) {
-    //     return res.json();
-    //   }).then(function(json) {
-    //     if(json.respuesta == 'creada' || json.respuesta == 'activada'){
-    //       thisH.props.agregar(json);
-    //       socket.emit('update playlist', json);
-    //     }
-    //   }).catch(function(ex) {
-    //     console.log('parsing failed', ex)
-    //   });
   }
   render() {
     return (

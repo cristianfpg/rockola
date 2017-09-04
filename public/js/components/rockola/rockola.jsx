@@ -32,8 +32,15 @@ class Rockola extends React.Component {
   componentWillMount(){
     let thisH = this;
     updatePlaylistFunc(thisH);
-    socket.on('update playlist', function(msg){
+    socket.on('update playlist', function(){
       updatePlaylistFunc(thisH);
+    });
+    socket.on('tiempo actual', function(msg){
+      console.log(msg.tiempoActual)
+      player.loadVideoById({
+        videoId: msg.urlActual,
+        startSeconds: msg.tiempoActual,
+      })
     });
   }
   handleAgregar(event) {
@@ -45,8 +52,8 @@ class Rockola extends React.Component {
       <div>
         <Buscador listItems={this.handleUpdate} agregar={this.handleAgregar}/>
         <Iframe/>
-        <Resultados lista={this.state.resultados}/>
-        <Playlist playlist={this.state.playlist}/>
+        <div id="resultados">{this.state.resultados}</div>
+        <div id="playlist">{this.state.playlist}</div>
       </div>
     );
   }
