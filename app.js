@@ -60,6 +60,14 @@ var Usuario = mongoose.model('Usuario', usuarioSchema);
 var Song = mongoose.model('Song', songSchema);
 
 var primerEmail = 'desarrollo1@coloralcuadrado.com';
+var tituloDefault = 'no hay canciones en la playlist de color';
+var urlActual = '_Uie2r5wWxw';
+var urlDefault = '_Uie2r5wWxw';
+var thumbDefault = 'http://cdn01.ib.infobae.com/adjuntos/162/imagenes/014/014/0014014674.jpg';
+var tiempoActual = 0;
+var tiempoTotal = 120;
+var calcTiempo;
+
 Usuario.find({email: primerEmail},function(err, callback){
   if(!callback[0]){
     var usuarioNuevo = new Usuario({
@@ -81,24 +89,20 @@ function songNuevaFunc(data){
   })
   songNueva.save();
 }
-var tituloDefault = 'no hay canciones en la playlist de color';
-var urlActual = '_Uie2r5wWxw';
-var urlDefault = '_Uie2r5wWxw';
-var thumbDefault = 'http://cdn01.ib.infobae.com/adjuntos/162/imagenes/014/014/0014014674.jpg';
-var tiempoActual = 0;
-var tiempoTotal = 20;
 
-// Song.findOne({titulo: tituloDefault},function(err, callback){
-//   if(!callback){
-//     songNuevaFunc({
-//       titulo: tituloDefault,
-//       url: urlActual,
-//       thumbnail: 'http://cdn01.ib.infobae.com/adjuntos/162/imagenes/014/014/0014014674.jpg',
-//       idplaylist : 0,
-//       duracion: tiempoTotal
-//     });
-//   }
-// })
+function contadorFunc(fin){
+  tiempoActual = 0;
+  clearInterval(calcTiempo);
+  calcTiempo = setInterval(function(){ myTimer() }, 1000);
+  function myTimer() {
+    tiempoActual++;
+    if(tiempoActual > fin ) {
+      clearInterval(calcTiempo);
+      cambioCancionFunc();
+    }
+  }
+}
+
 Song.find({url: urlDefault},function(err, callback){
   if(callback.length <= 0){
     songNuevaFunc({
@@ -115,56 +119,33 @@ function cancionActualFunc(response){
     response(err, callback);
   });
 }
-// calcularTiempoFunc();
-function calcularTiempoFunc(){
-  // tiempoActual = 0;
-  // Song.findOne({activa: true}).sort({created_at: -1}).exec(function(err, callback) {
-  //   myStopFunction();
-  //   if(!callback){
-  //     Song.update({titulo: tituloDefault},{activa: true},function(err, callback){
-  //       // res.json({respuesta: 'no hay mas canciones'});
-  //       console.log('no hay mas canciones')
-  //     })
-  //   }
-  //   tiempoTotal = callback.duracion;
-  //   urlActual = callback.url;
-  //   console.log(urlActual);
-  //   console.log(tiempoTotal)
-  //   var calcTiempo = setInterval(function(){ myTimer() }, 1000);
-  //   function myTimer() {
-  //     tiempoActual++;
-  //     console.log(tiempoActual)
-  //     if(tiempoActual > tiempoTotal ) {
-  //       console.log('acabo')
-  //       myStopFunction();
-  //       quitarCancionFunc();
-  //       calcularTiempoFunc();
-  //     }
-  //   }
-  //   function myStopFunction() {
-  //     clearInterval(calcTiempo);
-  //   }
-
-  // });
+function cambioCancionFunc(){
+  cancionActualFunc(function(err, callback){
+    Song.update({url: callback.url},{$set:{ activa: false }},function(err, callback){
+      cancionActualFunc(function(err, callback){
+        if(callback){
+          io.emit('tiempo actual', {tiempoActual: 0, urlActual: callback.url});
+          io.emit('update playlist');
+          cancionActualFunc(function(err, callback){
+            contadorFunc(callback.duracion)
+          })
+        }else{
+          Song.update({url: urlDefault},{$set:{ activa: true }},function(err, callback){
+            io.emit('tiempo actual', {tiempoActual: 0, urlActual: urlDefault});
+            io.emit('update playlist');
+            cancionActualFunc(function(err, callback){
+              contadorFunc(callback.duracion)
+            })
+          })
+        }
+      })
+    });
+  })
 }
 
-function quitarCancionFunc(){
-  // Song.update({url: urlActual},{$set:{ activa: false }},function(err, callback){
-  //   if(err || callback.nModified == 0){
-  //     console.log('error')
-  //   }else{
-  //     Song.find({activa: true},function(err, callback){
-  //       if(callback.length==0){
-  //         Song.update({titulo: tituloDefault},{activa: true},function(err, callback){
-  //           console.log('no hay mas canciones')
-  //         })
-  //       }else{
-  //         console.log('desactivada')
-  //       }
-  //     })
-  //   }
-  // })
-}
+cancionActualFunc(function(err, callback){
+  contadorFunc(callback.duracion)
+})
 
 // socket
 io.on('connection', function(socket){
@@ -172,7 +153,10 @@ io.on('connection', function(socket){
     io.emit('update playlist');
   });
   socket.on('tiempo actual', function(msg){
-    io.emit('tiempo actual', {tiempoActual: tiempoActual, urlActual: urlActual});
+    cancionActualFunc(function(err, callback){
+      urlActual = callback.url;
+      io.emit('tiempo actual', {tiempoActual: tiempoActual, urlActual: urlActual});
+    })
   });
   // socket.on('disconnect', function(){
   //   ('user disconnected');
@@ -180,92 +164,10 @@ io.on('connection', function(socket){
 });
 
 // rutas get
-var calcTiempo;
-
-tiempoActual = 0;
-clearInterval(calcTiempo);
-calcTiempo = setInterval(function(){ myTimer() }, 1000);
-// console.log(callback.duracion);
-function myTimer() {
-  tiempoActual++;
-  console.log(tiempoActual)
-  if(tiempoActual > 50 ) {
-    clearInterval(calcTiempo);
-    // Song.update({url: callback.url},{$set:{ activa: false }},function(err, callback){
-    //   cancionActualFunc(function(err, callback){
-    //     console.log('siguiente')
-    //     io.emit('tiempo actual', callback);
-    //   })
-    // });
-  }
-}
 
 app.get('/cambiocancion',function(req,res){
-  // cancionActualFunc(function(err, callback){
-  //   tiempoActual = 0;
-  //   clearInterval(calcTiempo);
-  //   calcTiempo = setInterval(function(){ myTimer() }, 1000);
-  //   console.log(callback.duracion);
-  //   function myTimer() {
-  //     tiempoActual++;
-  //     console.log(tiempoActual)
-  //     if(tiempoActual > 5 ) {
-  //       clearInterval(calcTiempo);
-  //       Song.update({url: callback.url},{$set:{ activa: false }},function(err, callback){
-  //         cancionActualFunc(function(err, callback){
-  //           console.log('siguiente')
-  //           io.emit('tiempo actual', callback);
-  //         })
-  //       });
-  //     }
-  //   }
-  // })
-
-        //   Song.update({url: urlDefault},{$set:{ activa: false }},function(err, callback){
-        //     tiempoActual: 120;
-        //     io.emit('tiempo actual', {tiempoActual: tiempoActual, urlActual: urlDefault});
-        //     io.emit('update playlist');
-        //   })
-
-  cancionActualFunc(function(err, callback){
-    Song.update({url: callback.url},{$set:{ activa: false }},function(err, callback){
-      cancionActualFunc(function(err, callback){
-        if(callback){
-          io.emit('tiempo actual', {tiempoActual: tiempoActual, urlActual: callback.url});
-          io.emit('update playlist');
-        }else{
-          Song.update({url: urlDefault},{$set:{ activa: true }},function(err, callback){
-            io.emit('tiempo actual', {tiempoActual: tiempoActual, urlActual: urlDefault});
-            io.emit('update playlist');
-          })
-        }
-      })
-    });
-  })
-  
+  cambioCancionFunc();
   res.json({respuesta: 'cambio'});
-
-    // var urlAborrar = callback.url;
-    // Song.update({url: urlAborrar},{$set:{ activa: false }},function(err, callback){
-    //   if(err || callback.nModified == 0){
-    //     res.json({respuesta: 'error al desactivar cancion'});
-    //   }else{
-    //     Song.find({activa: true},function(err, callback){
-    //       if(callback.length==0){
-    //         Song.update({titulo: tituloDefault},{activa: true},function(err, callback){
-    //           res.json({respuesta: 'no hay mas canciones'});
-    //         })
-    //       }else{
-    //         res.json({respuesta: 'desactivada'});
-    //       }
-    //     })
-    //   }
-    //   io.emit('tiempo actual', {tiempoActual: tiempoActual, urlActual: urlActual});
-    //   io.emit('update playlist', 'desde node');
-    //   calcularTiempoFunc();
-    //   console.log('cambio desde endpoint');
-    //   res.json({respuesta: 'cambio'});
-    // })
 })
 app.get('/', function(req, res){
   /*
@@ -372,23 +274,7 @@ app.post('/agregaraplaylist',function(req,res){
     });
   });
 })
-// app.post('/borrarcancion',function(req,res){
-//   Song.update({url: req.body.url},{$set:{ activa: false }},function(err, callback){
-//     if(err || callback.nModified == 0){
-//       res.json({respuesta: 'error al desactivar cancion'});
-//     }else{
-//       Song.find({activa: true},function(err, callback){
-//         if(callback.length==0){
-//           Song.update({titulo: tituloDefault},{activa: true},function(err, callback){
-//             res.json({respuesta: 'no hay mas canciones'});
-//           })
-//         }else{
-//           res.json({respuesta: 'desactivada'});
-//         }
-//       })
-//     }
-//   })
-// })
+
 // voto
 app.post('/votacion',function(req,res){
   console.log(req.body.url);

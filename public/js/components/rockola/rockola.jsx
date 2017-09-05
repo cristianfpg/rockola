@@ -39,7 +39,7 @@ class Rockola extends React.Component {
       console.log(msg.tiempoActual)
       player.loadVideoById({
         videoId: msg.urlActual,
-        startSeconds: msg.tiempoActual,
+        startSeconds: msg.tiempoActual+1,
       })
     });
   }
