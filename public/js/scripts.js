@@ -9,8 +9,8 @@ var player;
 var primeraVez = true;
 // var duracionMin = 120;
 // var duracionMax = 420;
-var duracionMin = 1;
-var duracionMax = 4200000000;
+var duracionMin = 120;
+var duracionMax = 420;
 
 function fetchFunc(endpoint,response){
   fetch(endpoint)
@@ -42,8 +42,8 @@ function fetchPostFunc(endpoint, object, response){
 // function updateActualFunc(){
 //   fetchFunc('/verplaylist',function(json){
     // videoActual = {
-    //   url: json[0].url, 
-    //   id: json[0]._id, 
+    //   url: json[0].url,
+    //   id: json[0]._id,
     //   thumbnail: json[0].thumbnail
     // };
 //     videoActual = json[0].url

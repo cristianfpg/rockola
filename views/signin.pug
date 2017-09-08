@@ -1,0 +1,14 @@
+doctype html
+html(lang="es")
+  head
+    link(rel='stylesheet', href='/css/color.css')
+  body
+    form(method='POST' action='/validarSignin')
+      div
+        label(for='nombre') Email:
+        input#usuario(type='text', placeholder='Nombre' name='nombre')
+      div
+        label(for='contrasena') Contraseña:
+        input#contrasena(type='password', placeholder='Contraseña' name='contrasena' value="laCONTRAseñaMA54465DIFciil")
+      div
+        button(type='submit') Sign up

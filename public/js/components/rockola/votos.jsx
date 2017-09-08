@@ -5,8 +5,7 @@ class Votos extends React.Component {
     this.votarCancion = this.votarCancion.bind(this);
   }
   votarCancion(event, msg){
-    console.log(this.props.url);
-    fetchPostFunc('/votacion',{url: '_Uie2r5wWxw', voto: 'like'}, function(){});
+    fetchPostFunc('/voto',{url: this.props.url, voto: msg});
   }
   render() {
     return (

@@ -8,9 +8,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mongoose = require('mongoose');
 var sha1 = require('sha1');
-var participante;
 mongoose.Promise = require('bluebird');
-// mongoose.connect('mongodb://192.168.0.252:27017/rockola'); // ipcolor
 mongoose.connect('mongodb://localhost:27017/rockola',{useMongoClient: true});
 
 app.use(express.static('public'));
@@ -26,9 +24,7 @@ app.set('view engine', 'pug');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }))
-// var urlencodedParser = bodyParser.urlencoded({extended: false});
 
-// mongoose
 var db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -36,48 +32,85 @@ db.once('open', function() {
   // conectado
 });
 
+io.on('connection', function(socket){
+  socket.on('update playlist', function(){
+    io.emit('update playlist');
+  });
+  socket.on('tiempo actual', function(msg){
+    cancionActualFunc(function(err, callback){
+      urlActual = callback.url;
+      io.emit('tiempo actual', {tiempoActual: tiempoActual, urlActual: urlActual});
+    })
+  });
+  socket.on('sesiones', function(){
+    console.log('sessiones console.log');
+  });
+});
+
 var usuarioSchema = mongoose.Schema({
-  nombre: {type: String,required: true},
-  email: {type: String,required: true,unique: true},
-  contrasena: {type: String,required: true},
-  votosPositivos: {type: Number,default: 0},
-  votosNegativos: {type: Number,default: 0}
+  nombre: {type: String, required: true, unique: true},
+  contrasena: {type: String, required: true},
+  reproducciones: {type: Number, default: 0},
+  omisiones: {type: Number, default: 0}
 });
 
 var songSchema = mongoose.Schema({
-  titulo: {type: String,required: true},
-  url: {type: String,required: true,unique: true},
-  thumbnail: {type: String,required: true},
-  idplaylist: {type: Number,required: true},
-  activa: {type: Boolean,default: true},
-  like: {type: Number,default: 0},
-  dislike: {type: Number,default: 0},
-  duracion: {type: Number,default: 0},
-  participantes: {type: Array, default: []}
+  titulo: {type: String, required: true},
+  url: {type: String, required: true, unique: true},
+  thumbnail: {type: String, required: true},
+  idplaylist: {type: Number, required: true},
+  activa: {type: Boolean, default: true},
+  likes: {type: Number, default: 0},
+  dislikes: {type: Number, default: 0},
+  duracion: {type: Number, default: 0}
+});
+
+var optionSchema = mongoose.Schema({
+  key: {type: String, required: true, unique: true},
+  settings: {type: {}, default: {}}
 });
 
 var Usuario = mongoose.model('Usuario', usuarioSchema);
 var Song = mongoose.model('Song', songSchema);
+var Option = mongoose.model('Option', optionSchema);
 
-var primerEmail = 'desarrollo1@coloralcuadrado.com';
+// funciones
+var nombreDefault = 'cristian';
+var contrasenaDefault = sha1('laCONTRAseñaMA54465DIFciil');
 var tituloDefault = 'no hay canciones en la playlist de color';
-var urlActual = '_Uie2r5wWxw';
 var urlDefault = '_Uie2r5wWxw';
 var thumbDefault = 'http://cdn01.ib.infobae.com/adjuntos/162/imagenes/014/014/0014014674.jpg';
+var urlActual;
 var tiempoActual = 0;
 var tiempoTotal = 120;
 var calcTiempo;
 
-Usuario.find({email: primerEmail},function(err, callback){
-  if(!callback[0]){
-    var usuarioNuevo = new Usuario({
-      nombre: 'Cristian Pacheco',
-      email: primerEmail,
-      contrasena: sha1('laCONTRAseñaMA54465DIFciil')
-    })
-    usuarioNuevo.save();
-  }
-})
+// var usuarioNuevo = new Usuario({
+//   nombre: nombreDefault,
+//   contrasena: contrasenaDefault
+// })
+// usuarioNuevo.save();
+//
+// songNuevaFunc({
+//   titulo: tituloDefault,
+//   url: urlDefault,
+//   thumbnail: thumbDefault,
+//   idplaylist : 0,
+//   duracion: tiempoTotal
+// });
+//
+// var option = new Option({
+//   key: 'votacion',
+//   settings: {}
+// });
+// option.save();
+//
+// var option = new Option({
+//   key: 'sesiones',
+//   settings: []
+// });
+// option.save();
+
 
 function songNuevaFunc(data){
   var songNueva = new Song({
@@ -103,22 +136,12 @@ function contadorFunc(fin){
   }
 }
 
-Song.find({url: urlDefault},function(err, callback){
-  if(callback.length <= 0){
-    songNuevaFunc({
-      titulo: tituloDefault,
-      url: urlDefault,
-      thumbnail: thumbDefault,
-      idplaylist : 0,
-      duracion: tiempoTotal
-    });
-  }
-})
 function cancionActualFunc(response){
   Song.findOne({activa: true}).sort({created_at: -1}).exec(function(err, callback) {
     response(err, callback);
   });
 }
+
 function cambioCancionFunc(){
   cancionActualFunc(function(err, callback){
     Song.update({url: callback.url},{$set:{ activa: false }},function(err, callback){
@@ -147,85 +170,62 @@ cancionActualFunc(function(err, callback){
   contadorFunc(callback.duracion)
 })
 
-// socket
-io.on('connection', function(socket){
-  socket.on('update playlist', function(){
-    io.emit('update playlist');
-  });
-  socket.on('tiempo actual', function(msg){
-    cancionActualFunc(function(err, callback){
-      urlActual = callback.url;
-      io.emit('tiempo actual', {tiempoActual: tiempoActual, urlActual: urlActual});
-    })
-  });
-  // socket.on('disconnect', function(){
-  //   ('user disconnected');
-  // });
+// endpoints y rutas
+app.get('/', function(req, res){
+  req.session.nombre ? res.render('rockola') : res.redirect('/signin');
 });
 
-// rutas get
+app.get('/signin',function(req,res){
+  req.session.nombre ? res.redirect('/') : res.render('signin');
+})
+
+app.get('/logout',function(req,res){
+  req.session.destroy();
+  delete req.session;
+  res.redirect('/signin');
+})
+
+app.post('/validarSignin',function(req,res){
+  var reqNombre = req.body.nombre;
+  var reqContrasena = sha1(req.body.contrasena);
+  Option.find({key: 'sesiones'},function(err, callback){
+    var getSettings = callback[0];
+    var arrayy = ['cambio','segundo'];
+    var arrayy2 = callback[0].settings;
+    console.log(arrayy);
+    console.log(arrayy2);
+    // getSettings.settings = arrayy;
+    // getSettings.save();
+    res.json(callback);
+  })
+  // Usuario.find({nombre: reqNombre},function(err, callback){
+  //   if(callback[0]){
+  //     if(reqContrasena == callback[0].contrasena){
+  //       req.session.nombre = reqNombre;
+  //       res.redirect('/');
+  //     }else{
+  //       res.json('q hace?! wtf??')
+  //     }
+  //   }else{
+  //     res.json('q hace?! wtf??')
+  //   }
+  // })
+})
 
 app.get('/cambiocancion',function(req,res){
   cambioCancionFunc();
   res.json({respuesta: 'cambio'});
 })
-app.get('/', function(req, res){
-  /*
-  if(req.session.nombre){
-    res.render('pages/Index', {nombre: req.session.nombre});
-  }else{
-    res.redirect('/signin');
-    // var nombre = 'Tito';
-    // req.session.nombre = nombre;
-    // res.send('Hola usuario desconocido. De ahora en adelante te llamaremos ' + nombre);
-  }
-  */
 
-  res.render('rockola');
-});
-
-// app.get('/rockola', function(req, res){
-// });
-
-// app.get('/signin', function(req, res){
-// });
-
-// app.get('/destroy',function(req, res){
-// });
-
-// rutas usuarios
-app.get('/verusuarios',function(req,res){
-  Usuario.find({}, function(err, callback){
-    res.json(callback);
-  })
-})
-app.post('/nuevousuario',function(req,res){
-  // var usuarioNuevo = new Usuario({
-  //   nombre: req.body.nombre,
-  //   email: req.body.email,
-  //   contrasena: req.body.contrasena
+app.post('/voto',function(req,res){
+  // Option.find({key: 'votacion'},function(err, callback){
+  //   var getSettings = callback[0];
+  //   getSettings.settings.urlActual = req.body.url;
+  //   getSettings.save();
+  //   res.json(callback);
   // })
-  // usuarioNuevo.save();
-  // res.redirect('/');
 })
 
-app.post('/verificarusuario',function(req,res){
-  // Usuario.find({email: req.body.email}, function(err, callback){
-  //   if(err){
-  //     ('err');
-  //   }else{
-  //     if(req.body.contrasena == callback[0].contrasena){
-  //       ('bien');
-  //       req.session.nombre = callback[0].nombre;
-  //     }else{
-  //       ('mal');
-  //     }
-  //   }
-  //   res.redirect('/');
-  // });
-})
-
-// rutas playlist
 app.get('/verplaylist',function(req,res){
   Song.find({activa: true},function(err, callback){
     var porid = callback;
@@ -236,11 +236,6 @@ app.get('/verplaylist',function(req,res){
   })
 })
 
-app.get('/vercancion/:url',function(req,res){
-  Song.find({url: req.params.url},function(err, callback){
-    res.json(callback);
-  })
-})
 app.post('/agregaraplaylist',function(req,res){
   Song.find({},function(err, callback){
     var porid = callback;
@@ -275,36 +270,6 @@ app.post('/agregaraplaylist',function(req,res){
   });
 })
 
-// voto
-app.post('/votacion',function(req,res){
-  console.log(req.body.url);
-  console.log(req.body.voto);
-  // Song.find({url: req.body.url},function(err, callback){
-  //   var participantes = callback[0].participantes;
-  //   function checkPart(persona){
-  //     return persona == participante;
-  //   }
-  //   if(!participantes.find(checkPart) && participante){
-  //     participantes.push(participante);
-  //     Song.update({url: req.body.url},{$set:{ participantes: participantes }},function(err, callback){
-  //       if(voto == 'like'){
-  //         Song.update({url: req.body.url},{$inc:{ like: 1 }},function(err, callback){
-  //         })
-  //       }else{
-  //         Song.update({url: req.body.url},{$inc:{ dislike: 1 }},function(err, callback){
-  //         })
-  //       }
-  //       res.json({respuesta: 'voto_correcto'});
-  //     })
-  //   }else{
-  //     if(!participante){
-  //       res.json({respuesta: 'no_esta_logueado'});
-  //     }else{
-  //       res.json({respuesta: 'en_lista'});
-  //     }
-  //   }
-  // })
-})
 // puerto
 http.listen(3000, function(){
   console.log('listening on *:3000');

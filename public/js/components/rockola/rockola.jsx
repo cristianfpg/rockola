@@ -11,9 +11,7 @@ function updatePlaylistFunc(thisH){
     listItems = filtros.map((filtro) =>
       <div className="playlist-item" key={filtro.url}>
         <p className="playlist-titulo">{filtro.titulo}</p>
-        {/*
         <Votos url={filtro.url}/>
-        */}
       </div>
     );
     thisH.setState({playlist: listItems});
@@ -36,7 +34,6 @@ class Rockola extends React.Component {
       updatePlaylistFunc(thisH);
     });
     socket.on('tiempo actual', function(msg){
-      console.log(msg.tiempoActual)
       player.loadVideoById({
         videoId: msg.urlActual,
         startSeconds: msg.tiempoActual+1,
@@ -51,7 +48,10 @@ class Rockola extends React.Component {
     return (
       <div>
         <Buscador listItems={this.handleUpdate} agregar={this.handleAgregar}/>
-        <Iframe/>
+        <div>
+          <img id="iframeimg"/>
+          <div id="iframe"></div>
+        </div>
         <div id="resultados">{this.state.resultados}</div>
         <div id="playlist">{this.state.playlist}</div>
       </div>
