@@ -111,6 +111,11 @@ var calcTiempo;
 // });
 // option.save();
 
+Option.find({key: 'sesiones'},function(err, callback){
+  var getSettings = callback[0];
+  getSettings.settings = [];
+  getSettings.save();
+})
 
 function songNuevaFunc(data){
   var songNueva = new Song({
@@ -180,36 +185,63 @@ app.get('/signin',function(req,res){
 })
 
 app.get('/logout',function(req,res){
-  req.session.destroy();
-  delete req.session;
-  res.redirect('/signin');
-})
+  if(req.session.nombre){
+    Option.find({key: 'sesiones'},function(err, callback){
+      var getSettings = callback[0];
+      var nuevaArray = getSettings.settings.slice(0);
+      var index = nuevaArray.indexOf(req.session.nombre);
+      nuevaArray.splice(index, 1);
 
+      getSettings.settings = nuevaArray;
+      getSettings.save();
+
+      req.session.destroy();
+      delete req.session;
+      res.redirect('/signin');
+    })
+  }else{
+    res.json('ud no deberia esta aqui');
+  }
+})
+// app.get('/loginficti',function(req,res){
+//   var reqNombre = 'olakase';
+//   Option.find({key: 'sesiones'},function(err, callback){
+//     var getSettings = callback[0];
+//     var nuevaArray = getSettings.settings.slice(0);
+//
+//     nuevaArray.push(reqNombre);
+//     getSettings.settings = nuevaArray;
+//     getSettings.save();
+//     req.session.nombre = reqNombre;
+//
+//     res.redirect('/');
+//   })
+// })
 app.post('/validarSignin',function(req,res){
   var reqNombre = req.body.nombre;
   var reqContrasena = sha1(req.body.contrasena);
   Option.find({key: 'sesiones'},function(err, callback){
     var getSettings = callback[0];
-    var arrayy = ['cambio','segundo'];
-    var arrayy2 = callback[0].settings;
-    console.log(arrayy);
-    console.log(arrayy2);
-    // getSettings.settings = arrayy;
-    // getSettings.save();
-    res.json(callback);
+    var nuevaArray = getSettings.settings.slice(0);
+    function checkArray(data){
+      return data == reqNombre;
+    }
+    if(!getSettings.settings.find(checkArray) && reqNombre){
+      Usuario.find({nombre: reqNombre},function(err, callback){
+        if(callback.length == 1 && callback[0].contrasena == reqContrasena){
+          nuevaArray.push(reqNombre);
+          getSettings.settings = nuevaArray;
+          getSettings.save();
+          req.session.nombre = reqNombre;
+          res.redirect('/');
+        }else{
+          res.json('nombre o contraseña incorrectos');
+        }
+      })
+    }else{
+      res.json('esta logueado o es vacio');
+    }
   })
-  // Usuario.find({nombre: reqNombre},function(err, callback){
-  //   if(callback[0]){
-  //     if(reqContrasena == callback[0].contrasena){
-  //       req.session.nombre = reqNombre;
-  //       res.redirect('/');
-  //     }else{
-  //       res.json('q hace?! wtf??')
-  //     }
-  //   }else{
-  //     res.json('q hace?! wtf??')
-  //   }
-  // })
 })
 
 app.get('/cambiocancion',function(req,res){
