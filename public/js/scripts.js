@@ -11,6 +11,8 @@ var primeraVez = true;
 // var duracionMax = 420;
 var duracionMin = 120;
 var duracionMax = 420;
+var miSesion;
+var urlActual;
 
 function fetchFunc(endpoint,response){
   fetch(endpoint)
@@ -22,22 +24,22 @@ function fetchFunc(endpoint,response){
       console.log(ex);
     })
 }
-function fetchPostFunc(endpoint, object, response){
-  fetch(endpoint, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(object)
-  })
-    .then(function(res) {
-      return res.json();
-    }).then(function(json) {
-      response(json);
-    }).catch(function(ex) {
-      console.log('parsing failed', ex)
-    });
-}
+// function fetchPostFunc(endpoint, object, response){
+//   fetch(endpoint, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json'
+//     },
+//     body: JSON.stringify(object)
+//   })
+//     .then(function(res) {
+//       return res.json();
+//     }).then(function(json) {
+//       response(json);
+//     }).catch(function(ex) {
+//       console.log('parsing failed', ex)
+//     });
+// }
 
 // function updateActualFunc(){
 //   fetchFunc('/verplaylist',function(json){

@@ -39,11 +39,8 @@ io.on('connection', function(socket){
   socket.on('tiempo actual', function(msg){
     cancionActualFunc(function(err, callback){
       urlActual = callback.url;
-      io.emit('tiempo actual', {tiempoActual: tiempoActual, urlActual: urlActual});
+      io.emit('tiempo actual', {tiempoActual: tiempoActual, urlActual: urlActual}, miSesion);
     })
-  });
-  socket.on('sesiones', function(){
-    console.log('sessiones console.log');
   });
 });
 
@@ -60,9 +57,9 @@ var songSchema = mongoose.Schema({
   thumbnail: {type: String, required: true},
   idplaylist: {type: Number, required: true},
   activa: {type: Boolean, default: true},
-  likes: {type: Number, default: 0},
-  dislikes: {type: Number, default: 0},
-  duracion: {type: Number, default: 0}
+  duracion: {type: Number, default: 0},
+  reproducciones: {type: Number, default: 0},
+  omisiones: {type: Number, default: 0}
 });
 
 var optionSchema = mongoose.Schema({
@@ -84,13 +81,14 @@ var urlActual;
 var tiempoActual = 0;
 var tiempoTotal = 120;
 var calcTiempo;
+var miSesion;
 
 // var usuarioNuevo = new Usuario({
 //   nombre: nombreDefault,
 //   contrasena: contrasenaDefault
 // })
 // usuarioNuevo.save();
-//
+
 // songNuevaFunc({
 //   titulo: tituloDefault,
 //   url: urlDefault,
@@ -98,13 +96,13 @@ var calcTiempo;
 //   idplaylist : 0,
 //   duracion: tiempoTotal
 // });
-//
+
 // var option = new Option({
 //   key: 'votacion',
 //   settings: {}
 // });
 // option.save();
-//
+
 // var option = new Option({
 //   key: 'sesiones',
 //   settings: []
@@ -128,7 +126,7 @@ function songNuevaFunc(data){
   songNueva.save();
 }
 
-function contadorFunc(fin){
+function reinicioContadorFunc(fin){
   tiempoActual = 0;
   clearInterval(calcTiempo);
   calcTiempo = setInterval(function(){ myTimer() }, 1000);
@@ -139,6 +137,10 @@ function contadorFunc(fin){
       cambioCancionFunc();
     }
   }
+}
+
+function reinicioVotacionFunc(){
+
 }
 
 function cancionActualFunc(response){
@@ -155,14 +157,14 @@ function cambioCancionFunc(){
           io.emit('tiempo actual', {tiempoActual: 0, urlActual: callback.url});
           io.emit('update playlist');
           cancionActualFunc(function(err, callback){
-            contadorFunc(callback.duracion)
+            reinicioContadorFunc(callback.duracion)
           })
         }else{
           Song.update({url: urlDefault},{$set:{ activa: true }},function(err, callback){
             io.emit('tiempo actual', {tiempoActual: 0, urlActual: urlDefault});
             io.emit('update playlist');
             cancionActualFunc(function(err, callback){
-              contadorFunc(callback.duracion)
+              reinicioContadorFunc(callback.duracion)
             })
           })
         }
@@ -172,7 +174,7 @@ function cambioCancionFunc(){
 }
 
 cancionActualFunc(function(err, callback){
-  contadorFunc(callback.duracion)
+  reinicioContadorFunc(callback.duracion)
 })
 
 // endpoints y rutas
@@ -203,20 +205,7 @@ app.get('/logout',function(req,res){
     res.json('ud no deberia esta aqui');
   }
 })
-// app.get('/loginficti',function(req,res){
-//   var reqNombre = 'olakase';
-//   Option.find({key: 'sesiones'},function(err, callback){
-//     var getSettings = callback[0];
-//     var nuevaArray = getSettings.settings.slice(0);
-//
-//     nuevaArray.push(reqNombre);
-//     getSettings.settings = nuevaArray;
-//     getSettings.save();
-//     req.session.nombre = reqNombre;
-//
-//     res.redirect('/');
-//   })
-// })
+
 app.post('/validarSignin',function(req,res){
   var reqNombre = req.body.nombre;
   var reqContrasena = sha1(req.body.contrasena);
@@ -233,6 +222,7 @@ app.post('/validarSignin',function(req,res){
           getSettings.settings = nuevaArray;
           getSettings.save();
           req.session.nombre = reqNombre;
+          miSesion = req.session.nombre;
           res.redirect('/');
         }else{
           res.json('nombre o contraseña incorrectos');
@@ -250,12 +240,19 @@ app.get('/cambiocancion',function(req,res){
 })
 
 app.post('/voto',function(req,res){
-  // Option.find({key: 'votacion'},function(err, callback){
-  //   var getSettings = callback[0];
-  //   getSettings.settings.urlActual = req.body.url;
-  //   getSettings.save();
-  //   res.json(callback);
-  // })
+  console.log(req.body);
+  Option.find({key: 'votacion'},function(err, callback){
+    var getSettings = callback[0];
+    // getSettings.settings = {
+    //   urlActual: 'urlActual',
+    //   participantes: ['uno','dos'],
+    //   likes: 0,
+    //   dislikes: 0,
+    //   owner: 'quien la puso'
+    // };
+    // getSettings.save();
+    res.json(getSettings.settings);
+  })
 })
 
 app.get('/verplaylist',function(req,res){

@@ -28,12 +28,15 @@ class Rockola extends React.Component {
     this.setState({resultados: e});
   }
   componentWillMount(){
+
     let thisH = this;
     updatePlaylistFunc(thisH);
     socket.on('update playlist', function(){
       updatePlaylistFunc(thisH);
     });
-    socket.on('tiempo actual', function(msg){
+    socket.on('tiempo actual', function(msg,sesion){
+      miSesion = sesion;
+      urlActual = msg.urlActual;
       player.loadVideoById({
         videoId: msg.urlActual,
         startSeconds: msg.tiempoActual+1,

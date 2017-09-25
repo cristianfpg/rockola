@@ -5,7 +5,25 @@ class Votos extends React.Component {
     this.votarCancion = this.votarCancion.bind(this);
   }
   votarCancion(event, msg){
-    fetchPostFunc('/voto',{url: this.props.url, voto: msg});
+    fetch('/voto', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        urlActual: urlActual, 
+        participante: miSesion
+      })
+    })
+    .then(function(res) {
+      return res.json();
+    }).then(function(json) {
+      console.log(msg)
+      console.log(miSesion)
+      console.log(urlActual)
+    }).catch(function(ex) {
+      console.log('parsing failed', ex)
+    });
   }
   render() {
     return (
