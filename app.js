@@ -8,14 +8,15 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mongoose = require('mongoose');
 var sha1 = require('sha1');
+
 mongoose.Promise = require('bluebird');
 mongoose.connect('mongodb://localhost:27017/rockola',{useMongoClient: true});
 
 app.use(express.static('public'));
 app.use(cookieParser());
 app.use(session({
-  secret: 'unsecreto_cualquiera',
-  resave: false,
+  secret: 'secreto_cualquiera',
+  resave: true,
   saveUninitialized: true
 }));
 
@@ -39,7 +40,7 @@ io.on('connection', function(socket){
   socket.on('tiempo actual', function(msg){
     cancionActualFunc(function(err, callback){
       urlActual = callback.url;
-      io.emit('tiempo actual', {tiempoActual: tiempoActual, urlActual: urlActual}, miSesion);
+      io.emit('tiempo actual', {tiempoActual: tiempoActual, urlActual: urlActual});
     })
   });
 });
@@ -81,7 +82,6 @@ var urlActual;
 var tiempoActual = 0;
 var tiempoTotal = 120;
 var calcTiempo;
-var miSesion;
 
 // var usuarioNuevo = new Usuario({
 //   nombre: nombreDefault,
@@ -191,7 +191,7 @@ app.get('/logout',function(req,res){
     Option.find({key: 'sesiones'},function(err, callback){
       var getSettings = callback[0];
       var nuevaArray = getSettings.settings.slice(0);
-      var index = nuevaArray.indexOf(req.session.nombre);
+      var index = nuevaArray.map(function (e) { return e.nombre; }).indexOf(req.session.nombre);
       nuevaArray.splice(index, 1);
 
       getSettings.settings = nuevaArray;
@@ -199,10 +199,10 @@ app.get('/logout',function(req,res){
 
       req.session.destroy();
       delete req.session;
-      res.redirect('/signin');
+      res.json('sesion terminada');
     })
   }else{
-    res.json('ud no deberia esta aqui');
+    res.json('no hay sesion');
   }
 })
 
@@ -213,16 +213,15 @@ app.post('/validarSignin',function(req,res){
     var getSettings = callback[0];
     var nuevaArray = getSettings.settings.slice(0);
     function checkArray(data){
-      return data == reqNombre;
+      return data.nombre == reqNombre;
     }
     if(!getSettings.settings.find(checkArray) && reqNombre){
       Usuario.find({nombre: reqNombre},function(err, callback){
         if(callback.length == 1 && callback[0].contrasena == reqContrasena){
-          nuevaArray.push(reqNombre);
+          nuevaArray.push({nombre: reqNombre});
           getSettings.settings = nuevaArray;
           getSettings.save();
           req.session.nombre = reqNombre;
-          miSesion = req.session.nombre;
           res.redirect('/');
         }else{
           res.json('nombre o contraseña incorrectos');
@@ -238,9 +237,10 @@ app.get('/cambiocancion',function(req,res){
   cambioCancionFunc();
   res.json({respuesta: 'cambio'});
 })
-
+app.get('/misesion',function(req,res){
+  res.json(req.session.nombre);
+});
 app.post('/voto',function(req,res){
-  console.log(req.body);
   Option.find({key: 'votacion'},function(err, callback){
     var getSettings = callback[0];
     // getSettings.settings = {

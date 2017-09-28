@@ -11,7 +11,6 @@ var primeraVez = true;
 // var duracionMax = 420;
 var duracionMin = 120;
 var duracionMax = 420;
-var miSesion;
 var urlActual;
 
 function fetchFunc(endpoint,response){
