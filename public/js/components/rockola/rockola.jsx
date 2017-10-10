@@ -33,6 +33,9 @@ class Rockola extends React.Component {
     updatePlaylistFunc(thisH);
     socket.on('update playlist', function(){
       updatePlaylistFunc(thisH);
+    });    
+    socket.on('pruebaa', function(msg){
+      console.log(msg);
     });
     socket.on('tiempo actual', function(msg){
       urlActual = msg.urlActual;

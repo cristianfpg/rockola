@@ -6,15 +6,15 @@ class Votos extends React.Component {
   }
   votarCancion(event, msg){
     var id = socket.io.engine.id;
-    alert(id);
 
     // fetch('/misesion')
     //   .then(function(response) {
-    //     console.log(response);
     //     return response.json();
     //   }).then(function(json) {
-    //     console.log(json);
-    //   })
+        // console.log(json);
+      // }).catch(function(ex){
+      //   console.log('parsing failed', ex)
+      // })
     // fetch('/voto', {
     //   method: 'POST',
     //   headers: {

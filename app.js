@@ -238,7 +238,9 @@ app.get('/cambiocancion',function(req,res){
   res.json({respuesta: 'cambio'});
 })
 app.get('/misesion',function(req,res){
+  console.log(req.session.nombre);
   res.json(req.session.nombre);
+  io.emit('pruebaa',req.session.nombre);   
 });
 app.post('/voto',function(req,res){
   Option.find({key: 'votacion'},function(err, callback){
