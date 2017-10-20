@@ -75,7 +75,8 @@ var Option = mongoose.model('Option', optionSchema);
 
 // funciones
 var nombreDefault = 'cristian';
-var contrasenaDefault = sha1('laCONTRAseñaMA54465DIFciil');
+var contrasenaDefault = 'laCONTRAseñaMA54465DIFciil';
+// var contrasenaDefault = sha1('laCONTRAseñaMA54465DIFciil');
 var tituloDefault = 'no hay canciones en la playlist de color';
 var urlDefault = '_Uie2r5wWxw';
 var thumbDefault = 'http://cdn01.ib.infobae.com/adjuntos/162/imagenes/014/014/0014014674.jpg';
@@ -189,7 +190,7 @@ function cambioCancionFunc(){
 }
 
 cancionActualFunc(function(err, callback){
-  reinicioContadorFunc(callback.duracion)
+  reinicioContadorFunc(callback.duracion+3);
 })
 
 // endpoints y rutas
@@ -222,7 +223,8 @@ app.get('/logout',function(req,res){
 
 app.post('/validarSignin',function(req,res){
   var reqNombre = req.body.nombre;
-  var reqContrasena = sha1(req.body.contrasena);
+  // var reqContrasena = sha1(req.body.contrasena);
+  var reqContrasena = req.body.contrasena;
   Option.find({key: 'sesiones'},function(err, callback){
     var getSettings = callback[0];
     var nuevaArray = getSettings.settings.slice(0);
@@ -251,15 +253,14 @@ app.post('/validarSignin',function(req,res){
 app.get('/cambiocancion',function(req,res){
   cambioCancionFunc();
   res.json({respuesta: 'cambio'});
+  io.emit('update votos');
 })
 app.get('/misesion',function(req,res){
   res.json(req.session.nombre);
 });
 app.post('/voto',function(req,res){
-  // console.log(req.body);
   var reqNombre = req.body.participante;
   var reqVoto = req.body.voto;
-  // var reqUrlAct = req.body.url;
   Option.find({key: 'votacion'},function(err, callback){
     var getSettings = callback[0];
     function checkArray(data){
@@ -284,6 +285,7 @@ app.post('/voto',function(req,res){
       };
       getSettings.save();
       res.json(getSettings.settings);
+      if((likeAct + 2) < dislikeAct) cambioCancionFunc();
     }else{
       res.json('ya voto');
     }
@@ -299,7 +301,7 @@ app.get('/verplaylist',function(req,res){
     res.json(porid);
   })
 })
-app.get('/verparticipantes',function(req,res){
+app.get('/vervotos',function(req,res){
   Option.find({key: 'votacion'},function(err, callback){
     var getSettings = callback[0];
     res.json(getSettings);    

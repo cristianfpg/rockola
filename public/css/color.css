@@ -37,6 +37,12 @@
 .playlist-btns .playlist-btn.dislike.block{
   background: gray;
 }
+.playlist-btns .playlist-btn.like.hide{
+  background: none;
+}
+.playlist-btns .playlist-btn.dislike.hide{
+  background: none;
+}
 .playlist-btns.true{
   opacity: 0.5;
 }
