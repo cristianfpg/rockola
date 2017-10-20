@@ -25,11 +25,17 @@
 .playlist-btns{
   display: inline-block;
 }
-.playlist-btns.false .playlist-btn.like:hover{
+.playlist-btns .playlist-btn.like:hover, .playlist-btns .playlist-btn.like.active{
   background: green;
 }
-.playlist-btns.false .playlist-btn.dislike:hover{
+.playlist-btns .playlist-btn.dislike:hover, .playlist-btns .playlist-btn.dislike.active{
   background: red;
+}
+.playlist-btns .playlist-btn.like.block{
+  background: gray;
+}
+.playlist-btns .playlist-btn.dislike.block{
+  background: gray;
 }
 .playlist-btns.true{
   opacity: 0.5;

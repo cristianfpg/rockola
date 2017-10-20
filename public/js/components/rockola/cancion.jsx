@@ -34,7 +34,8 @@ class Cancion extends React.Component {
               titulo: thisH.props.titulo, 
               url: thisH.props.videoId, 
               thumbnail: thisH.props.thumbnail,
-              duracion: totalSegundos
+              duracion: totalSegundos,
+              owner: 'owner react'
             })
           })
           .then(function(res) {

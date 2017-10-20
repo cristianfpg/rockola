@@ -58,6 +58,7 @@ var songSchema = mongoose.Schema({
   thumbnail: {type: String, required: true},
   idplaylist: {type: Number, required: true},
   activa: {type: Boolean, default: true},
+  owner: {type: String, required: true},
   duracion: {type: Number, default: 0},
   reproducciones: {type: Number, default: 0},
   omisiones: {type: Number, default: 0}
@@ -94,7 +95,8 @@ var calcTiempo;
 //   url: urlDefault,
 //   thumbnail: thumbDefault,
 //   idplaylist : 0,
-//   duracion: tiempoTotal
+//   duracion: tiempoTotal,
+//   owner: 'desde node'
 // });
 
 // var option = new Option({
@@ -121,7 +123,8 @@ function songNuevaFunc(data){
     url: data.url,
     thumbnail: data.thumbnail,
     idplaylist: data.idplaylist,
-    duracion: data.duracion
+    duracion: data.duracion,
+    owner: data.owner
   })
   songNueva.save();
 }
@@ -139,8 +142,18 @@ function reinicioContadorFunc(fin){
   }
 }
 
-function reinicioVotacionFunc(){
-
+function reinicioVotacionFunc(urlActual,owner){
+  Option.find({key: 'votacion'},function(err, callback){
+    var getSettings = callback[0];
+    getSettings.settings = {
+      urlActual: urlActual,
+      participantes: [],
+      like: 0,
+      dislike: 0,
+      owner: owner
+    };
+    getSettings.save();
+  })
 }
 
 function cancionActualFunc(response){
@@ -159,6 +172,7 @@ function cambioCancionFunc(){
           cancionActualFunc(function(err, callback){
             reinicioContadorFunc(callback.duracion)
           })
+          reinicioVotacionFunc(callback.url,'owner');
         }else{
           Song.update({url: urlDefault},{$set:{ activa: true }},function(err, callback){
             io.emit('tiempo actual', {tiempoActual: 0, urlActual: urlDefault});
@@ -167,6 +181,7 @@ function cambioCancionFunc(){
               reinicioContadorFunc(callback.duracion)
             })
           })
+          reinicioVotacionFunc(urlDefault,'owner');          
         }
       })
     });
@@ -196,9 +211,8 @@ app.get('/logout',function(req,res){
 
       getSettings.settings = nuevaArray;
       getSettings.save();
-
+      res.clearCookie('sesion');
       req.session.destroy();
-      delete req.session;
       res.json('sesion terminada');
     })
   }else{
@@ -222,6 +236,7 @@ app.post('/validarSignin',function(req,res){
           getSettings.settings = nuevaArray;
           getSettings.save();
           req.session.nombre = reqNombre;
+          res.cookie('sesion', reqNombre, { maxAge: 900000000000, httpOnly: false});
           res.redirect('/');
         }else{
           res.json('nombre o contraseña incorrectos');
@@ -238,22 +253,40 @@ app.get('/cambiocancion',function(req,res){
   res.json({respuesta: 'cambio'});
 })
 app.get('/misesion',function(req,res){
-  console.log(req.session.nombre);
   res.json(req.session.nombre);
-  io.emit('pruebaa',req.session.nombre);   
 });
 app.post('/voto',function(req,res){
+  // console.log(req.body);
+  var reqNombre = req.body.participante;
+  var reqVoto = req.body.voto;
+  // var reqUrlAct = req.body.url;
   Option.find({key: 'votacion'},function(err, callback){
     var getSettings = callback[0];
-    // getSettings.settings = {
-    //   urlActual: 'urlActual',
-    //   participantes: ['uno','dos'],
-    //   likes: 0,
-    //   dislikes: 0,
-    //   owner: 'quien la puso'
-    // };
-    // getSettings.save();
-    res.json(getSettings.settings);
+    function checkArray(data){
+      return data == reqNombre;
+    }
+    if(!getSettings.settings.participantes) getSettings.settings.participantes = [];
+    if(!getSettings.settings.participantes.find(checkArray)){
+      var nuevaArray = getSettings.settings.participantes.slice(0);
+      var urlAct = getSettings.settings.urlActual;
+      var ownerAct = getSettings.settings.owner;
+      var likeAct = getSettings.settings.like;
+      var dislikeAct = getSettings.settings.dislike;
+      if(reqVoto == 'like') likeAct++
+      if(reqVoto == 'dislike') dislikeAct++
+      nuevaArray.push(reqNombre);
+      getSettings.settings = {
+        urlActual: urlAct,
+        participantes: nuevaArray,
+        like: likeAct,
+        dislike: dislikeAct,
+        owner: ownerAct
+      };
+      getSettings.save();
+      res.json(getSettings.settings);
+    }else{
+      res.json('ya voto');
+    }
   })
 })
 
@@ -266,7 +299,12 @@ app.get('/verplaylist',function(req,res){
     res.json(porid);
   })
 })
-
+app.get('/verparticipantes',function(req,res){
+  Option.find({key: 'votacion'},function(err, callback){
+    var getSettings = callback[0];
+    res.json(getSettings);    
+  })  
+});
 app.post('/agregaraplaylist',function(req,res){
   Song.find({},function(err, callback){
     var porid = callback;
@@ -284,12 +322,13 @@ app.post('/agregaraplaylist',function(req,res){
             url: req.body.url,
             thumbnail: req.body.thumbnail,
             idplaylist: lengthSongs,
-            duracion: req.body.duracion
+            duracion: req.body.duracion,
+            owner: req.body.owner
           });
           res.json({respuesta: 'creada'});
         }else{
           if(!callback[0].activa){
-            Song.update({url: req.body.url},{$set:{ activa: true, idplaylist: lengthSongs}},function(err, callback){
+            Song.update({url: req.body.url},{$set:{ activa: true, idplaylist: lengthSongs, owner: req.body.owner}},function(err, callback){
             })
             res.json({respuesta: 'activada'});
           }else{

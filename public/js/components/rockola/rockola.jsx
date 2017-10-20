@@ -28,13 +28,18 @@ class Rockola extends React.Component {
     this.setState({resultados: e});
   }
   componentWillMount(){
-
     let thisH = this;
     updatePlaylistFunc(thisH);
     socket.on('update playlist', function(){
       updatePlaylistFunc(thisH);
-    });    
-    socket.on('pruebaa', function(msg){
+    }); 
+    // socket.on('obtener id', function(msg){
+    //   console.log(msg);
+    // });
+    window.onload = function(){
+      socket.emit('obtener nombre',socket.id);
+    }
+    socket.on('obtener nombre', function(msg){
       console.log(msg);
     });
     socket.on('tiempo actual', function(msg){
