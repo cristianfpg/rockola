@@ -23,7 +23,6 @@ class Cancion extends React.Component {
         var minutes = (parseInt(match[2]) || 0);
         var seconds = (parseInt(match[3]) || 0);
         var totalSegundos = seconds + (minutes*60) + (hours*3600);
-        
         if(totalSegundos >= duracionMin && totalSegundos <= duracionMax){
           fetch('/agregaraplaylist', {
             method: 'POST',
@@ -35,7 +34,7 @@ class Cancion extends React.Component {
               url: thisH.props.videoId, 
               thumbnail: thisH.props.thumbnail,
               duracion: totalSegundos,
-              owner: 'owner react'
+              owner: readCookie('sesion')
             })
           })
           .then(function(res) {
@@ -62,7 +61,9 @@ class Cancion extends React.Component {
     return (
       <div className='video' onClick={this.addToPlaylist}>
         <p>{this.props.titulo}</p>
+        {/*
         <img src={this.props.thumbnail}/>
+        */}
       </div>
     );
   }

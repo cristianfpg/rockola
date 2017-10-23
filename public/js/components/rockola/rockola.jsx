@@ -2,6 +2,8 @@ function updatePlaylistFunc(thisH){
   let listItems = [];
   let filtros = [];
   fetchFunc('/verplaylist',function(json){
+    let minFinalReproductor = json[0].duracion;
+    let nombreActual = json[0].titulo;
     for (var value of json) {
       let titulo = value.titulo;
       let url = value.url;
@@ -14,13 +16,14 @@ function updatePlaylistFunc(thisH){
         <Votos url={filtro.url}/>
       </div>
     );
-    thisH.setState({playlist: listItems});
+    thisH.setState({playlist: listItems, minFinalReproductor: minFinalReproductor, nombreActual: nombreActual});
   });
 }
+
 class Rockola extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {resultados: '', playlist: ''};
+    this.state = {resultados: '', playlist: '', minFinalReproductor: '', minActualReproductor: '', cssProgreso: '', nombreActual: ''};
     this.handleUpdate = this.handleUpdate.bind(this);
     this.handleAgregar = this.handleAgregar.bind(this);
   }
@@ -33,21 +36,25 @@ class Rockola extends React.Component {
     socket.on('update playlist', function(){
       updatePlaylistFunc(thisH);
     }); 
-    // socket.on('obtener id', function(msg){
-    //   console.log(msg);
-    // });
-    window.onload = function(){
-      socket.emit('obtener nombre',socket.id);
-    }
-    socket.on('obtener nombre', function(msg){
-      console.log(msg);
-    });
     socket.on('tiempo actual', function(msg){
+      var urlActual;
+      var tiempoActual = msg.tiempoActual+1;
+      var tiempoFinal = thisH.state.minFinalReproductor;
+      
       urlActual = msg.urlActual;
+      var intervalReproductor;      
+      thisH.setState({minActualReproductor: tiempoActual});
       player.loadVideoById({
         videoId: msg.urlActual,
-        startSeconds: msg.tiempoActual+1,
+        startSeconds: msg.tiempoActual
       })
+      clearInterval(intervalReproductor);
+      intervalReproductor = setInterval(function(){ 
+        tiempoActual++; 
+        var cssProgreso = (tiempoActual*100)/tiempoFinal;
+        thisH.setState({cssProgreso: cssProgreso, minActualReproductor: tiempoActual});
+        if(tiempoActual>=thisH.state.minFinalReproductor) clearInterval(intervalReproductor);
+      },1000);    
     });
   }
   handleAgregar(event) {
@@ -59,11 +66,20 @@ class Rockola extends React.Component {
       <div>
         <Buscador listItems={this.handleUpdate} agregar={this.handleAgregar}/>
         <div>
-          <img id="iframeimg"/>
           <div id="iframe"></div>
         </div>
         <div id="resultados">{this.state.resultados}</div>
         <div id="playlist">{this.state.playlist}</div>
+        <div id="reproductor">
+          <div className="controles">
+            <p className="nombre-cancion">{this.state.nombreActual}</p>
+            <p className="inicio">{this.state.minActualReproductor}</p>
+            <div className="progreso">
+              <div style={{width: this.state.cssProgreso +'%'}} className="progreso-actual"></div>
+            </div>
+            <p className="fin">{this.state.minFinalReproductor}</p>            
+          </div>
+        </div>
       </div>
     );
   }

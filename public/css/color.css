@@ -1,35 +1,52 @@
+body *{
+  font-family: 'helvetica';
+  font-weight: 300;
+}
 .video{
-  display: inline-block;
+  display: block;
   position: relative;
-  width: 20%;
-  margin: 3%;
+  max-width: 600px;
+  margin: 0 auto;
   cursor: pointer;
+  text-align: left;
 }
 #iframe{
   opacity: 0;
   pointer-events: none;
-}
-#playlist{
   position: absolute;
   top: 0;
+  left: 0;
+}
+#playlist{
+  position: fixed;
+  top: 0;
   right: 0;
-  width: 300px;
-  text-align: right;
+  height: calc(100% - 60px);
+  background: #fbfbfb;
+  padding: 20px 20px;
+  width: 28vw;
+  float: right;
 }
 .playlist-item{
   display: block;
 }
 .playlist-titulo{
   display: inline-block;
+  font-size: 12px;
+  margin: 0;
+  width: calc(100% - 60px);
 }
 .playlist-btns{
   display: inline-block;
+  width: 55px;
+  text-align: right;
+  float: right;
 }
 .playlist-btns .playlist-btn.like:hover, .playlist-btns .playlist-btn.like.active{
-  background: green;
+  background: #64cc64;
 }
 .playlist-btns .playlist-btn.dislike:hover, .playlist-btns .playlist-btn.dislike.active{
-  background: red;
+  background: tomato;
 }
 .playlist-btns .playlist-btn.like.block{
   background: gray;
@@ -50,22 +67,88 @@
   cursor: initial;
 }
 .playlist-btn{
-  width: 20px;
-  height: 20px;
-  border-radius: 3px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
   display: inline-block;
   vertical-align: top;
   position: relative;
   cursor: pointer;
-  font-size: 15px;
+  font-size: 10px;
   color: white;
   text-align: center;
-  margin-left: 20px;
+  margin-left: 5px;
   background: gray;
+  padding: 3px;
 }
 .playlist-btn.like.active{
-  background: green;
+  background: #64cc64;
 }
 .playlist-btn.dislike.active{
-  background: red;
+  background: tomato;
+}
+#reproductor{
+  width: 100%;
+  height: 60px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background: #e6e6e6;
+}
+#reproductor .nombre-cancion{
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+}
+#reproductor .controles{
+  width: 50%;
+  margin: 0 auto;
+  height: 100%;
+  position: relative;
+  padding: 12px 0;
+}
+#reproductor .progreso{
+  width: calc(100% - 80px);
+  background: white;
+  position: relative;
+}
+#reproductor .progreso-actual{
+  background: #969696;
+  top: 0;  
+  position: absolute;
+  left: 0;
+}
+#reproductor .progreso, #reproductor .progreso-actual{
+  height: 2px;
+  /* transition: all 1s linear; */
+}
+#reproductor p.inicio, #reproductor p.fin, #reproductor .progreso{
+  display: inline-block;
+  vertical-align: middle;
+}
+#reproductor p.inicio, #reproductor p.fin{
+  width: 36px;
+  margin: 0 2px;
+  text-align: center;
+  font-size: 12px;
+}  
+#buscadorkeyword{
+  text-align: center;
+  position: relative;
+  width: 70vw;
+  float: left;
+}
+#buscadorkeyword input{
+  max-width: 300px;
+  width: 100%;
+  padding: 9px;
+  background: #eee;
+  border: none;
+  outline: 0;
+  text-align: center;
+}
+#resultados{
+  text-align: center;
+  width: 70vw;
+  float: left;
 }
