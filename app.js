@@ -75,7 +75,7 @@ var Option = mongoose.model('Option', optionSchema);
 
 // funciones
 var nombreDefault = 'cristian';
-var contrasenaDefault = 'laCONTRAseñaMA54465DIFciil';
+var contrasenaDefault = nombreDefault;
 // var contrasenaDefault = sha1('laCONTRAseñaMA54465DIFciil');
 var tituloDefault = 'no hay canciones en la playlist de color';
 var urlDefault = '_Uie2r5wWxw';
@@ -84,39 +84,6 @@ var urlActual;
 var tiempoActual = 0;
 var tiempoTotal = 120;
 var calcTiempo;
-
-// var usuarioNuevo = new Usuario({
-//   nombre: nombreDefault,
-//   contrasena: contrasenaDefault
-// })
-// usuarioNuevo.save();
-
-// songNuevaFunc({
-//   titulo: tituloDefault,
-//   url: urlDefault,
-//   thumbnail: thumbDefault,
-//   idplaylist : 0,
-//   duracion: tiempoTotal,
-//   owner: 'desde node'
-// });
-
-// var option = new Option({
-//   key: 'votacion',
-//   settings: {}
-// });
-// option.save();
-
-// var option = new Option({
-//   key: 'sesiones',
-//   settings: []
-// });
-// option.save();
-
-Option.find({key: 'sesiones'},function(err, callback){
-  var getSettings = callback[0];
-  getSettings.settings = [];
-  getSettings.save();
-})
 
 function songNuevaFunc(data){
   var songNueva = new Song({
@@ -129,6 +96,41 @@ function songNuevaFunc(data){
   })
   songNueva.save();
 }
+
+/*
+var usuarioNuevo = new Usuario({
+  nombre: nombreDefault,
+  contrasena: contrasenaDefault
+})
+usuarioNuevo.save();
+
+songNuevaFunc({
+  titulo: tituloDefault,
+  url: urlDefault,
+  thumbnail: thumbDefault,
+  idplaylist : 0,
+  duracion: tiempoTotal,
+  owner: 'desde node'
+});
+
+var option = new Option({
+  key: 'votacion',
+  settings: {}
+});
+option.save();
+
+var option = new Option({
+  key: 'sesiones',
+  settings: []
+});
+option.save();
+*/
+
+Option.find({key: 'sesiones'},function(err, callback){
+  var getSettings = callback[0];
+  getSettings.settings = [];
+  getSettings.save();
+})
 
 function reinicioContadorFunc(fin){
   tiempoActual = 0;
