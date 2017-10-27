@@ -8,7 +8,7 @@ function actualizarBotonesFunc(thisH){
 class Votos extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {like: 'hide', dislike: 'hide', voto: false};
+    this.state = {like: '', dislike: '', voto: false};
     this.votarCancion = this.votarCancion.bind(this);
   }
   componentWillMount(){
@@ -17,8 +17,10 @@ class Votos extends React.Component {
     socket.on('update votos', function(){
       actualizarBotonesFunc(thisH);
     }); 
+    socket.on('update playlist', function(){
+      thisH.setState({like: '', dislike: '', voto: false});
+    });
   }
-  
   votarCancion(event, msg){
     var thisH = this;
     if(!thisH.state.voto){

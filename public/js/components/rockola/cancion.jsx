@@ -43,9 +43,8 @@ class Cancion extends React.Component {
             if(json.respuesta == 'creada' || json.respuesta == 'activada'){
               thisH.props.agregar(json);
               socket.emit('update playlist');
-              alert('hecho!')
             }else{
-              alert('ya esta en la playlist')
+              alert('ya esta en la playlist');
             }
           }).catch(function(ex) {
             console.log('parsing failed', ex)
@@ -59,11 +58,16 @@ class Cancion extends React.Component {
   }
   render() {
     return (
-      <div className='video' onClick={this.addToPlaylist}>
-        <p>{this.props.titulo}</p>
-        {/*
-        <img src={this.props.thumbnail}/>
-        */}
+      <div className='video'>
+        <div className="thumbnail">
+          <img src={this.props.channelTB}/>
+        </div>
+        <p className="titulo-video">{this.props.titulo}</p>
+        <div className="views">
+          <p>{formatearNumero(this.props.views)}</p>
+          <p>Reproducciones</p>
+        </div>
+        <p className="btn-agregar" onClick={this.addToPlaylist}>+</p>
       </div>
     );
   }

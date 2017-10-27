@@ -77,7 +77,7 @@ var Option = mongoose.model('Option', optionSchema);
 var nombreDefault = 'cristian';
 var contrasenaDefault = nombreDefault;
 // var contrasenaDefault = sha1('laCONTRAseñaMA54465DIFciil');
-var tituloDefault = 'no hay canciones en la playlist de color';
+var tituloDefault = 'No hay canciones en la playlist de Color.';
 var urlDefault = '_Uie2r5wWxw';
 var thumbDefault = 'http://cdn01.ib.infobae.com/adjuntos/162/imagenes/014/014/0014014674.jpg';
 var urlActual;
@@ -175,7 +175,7 @@ function cambioCancionFunc(){
           cancionActualFunc(function(err, callback){
             reinicioContadorFunc(callback.duracion)
           })
-          reinicioVotacionFunc(callback.url,'owner');
+          reinicioVotacionFunc(callback.url,callback.owner);
         }else{
           Song.update({url: urlDefault},{$set:{ activa: true }},function(err, callback){
             io.emit('tiempo actual', {tiempoActual: 0, urlActual: urlDefault});
@@ -184,7 +184,7 @@ function cambioCancionFunc(){
               reinicioContadorFunc(callback.duracion)
             })
           })
-          reinicioVotacionFunc(urlDefault,'owner');          
+          reinicioVotacionFunc(urlDefault,'Servidor');          
         }
       })
     });
@@ -201,7 +201,7 @@ app.get('/', function(req, res){
 });
 
 app.get('/signin',function(req,res){
-  req.session.nombre ? res.redirect('/') : res.render('signin', {msg: ''});
+  req.session.nombre ? res.redirect('/') : res.render('signin',{msg:''});
 })
 
 app.get('/logout',function(req,res){
@@ -211,7 +211,6 @@ app.get('/logout',function(req,res){
       var nuevaArray = getSettings.settings.slice(0);
       var index = nuevaArray.map(function (e) { return e.nombre; }).indexOf(req.session.nombre);
       nuevaArray.splice(index, 1);
-
       getSettings.settings = nuevaArray;
       getSettings.save();
       res.clearCookie('sesion');
@@ -244,11 +243,11 @@ app.post('/validarSignin',function(req,res){
           res.redirect('/');          
         }else{
           // res.json('no esta registrado');
-          res.render('signin',{msg: 'no esta registrado'});
+          res.render('signin',{msg: 'No esta registrado'});
         }
       })
     }else{
-      res.json('esta logueado o es vacio');
+      res.render('signin',{msg: 'Esta logueado'});
     }
   })
 })
@@ -269,7 +268,9 @@ app.post('/voto',function(req,res){
     function checkArray(data){
       return data == reqNombre;
     }
-    if(!getSettings.settings.participantes) getSettings.settings.participantes = [];
+    if(!getSettings.settings.participantes) {
+      getSettings.settings.participantes = [];
+    }
     if(!getSettings.settings.participantes.find(checkArray)){
       var nuevaArray = getSettings.settings.participantes.slice(0);
       var urlAct = getSettings.settings.urlActual;
@@ -288,7 +289,16 @@ app.post('/voto',function(req,res){
       };
       getSettings.save();
       res.json(getSettings.settings);
-      if((likeAct + 2) < dislikeAct) cambioCancionFunc();
+      if((likeAct + 0) < dislikeAct){
+        cambioCancionFunc();
+        if(ownerAct != 'Servidor'){
+          Usuario.find({nombre: ownerAct},function(err, callback){
+            var getCallback = callback[0];
+            getCallback.omisiones++;
+            getCallback.save();
+          })
+        }
+      } 
     }else{
       res.json('ya voto');
     }
@@ -333,8 +343,7 @@ app.post('/agregaraplaylist',function(req,res){
           res.json({respuesta: 'creada'});
         }else{
           if(!callback[0].activa){
-            Song.update({url: req.body.url},{$set:{ activa: true, idplaylist: lengthSongs, owner: req.body.owner}},function(err, callback){
-            })
+            Song.update({url: req.body.url},{$set:{ activa: true, idplaylist: lengthSongs, owner: req.body.owner}},function(err, callback){})
             res.json({respuesta: 'activada'});
           }else{
             res.json({respuesta: 'esta en playlist'});

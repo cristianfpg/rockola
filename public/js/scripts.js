@@ -8,8 +8,8 @@ firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 var player;
 var primeraVez = true;
 var duracionMin = 180;
-var duracionMax = 360;
-var numeroBusqueda = 50;
+var duracionMax = 540;
+var numeroBusqueda = 30;
 var urlActual;
 
 function fetchFunc(endpoint,response){
@@ -48,4 +48,15 @@ function onYouTubeIframeAPIReady() {
 }
 function onPlayerReady(event) {
   socket.emit('tiempo actual');
+}
+function formatearNumero(nStr) {
+  nStr += '';
+  x = nStr.split('.');
+  x1 = x[0];
+  x2 = x.length > 1 ? ',' + x[1] : '';
+  var rgx = /(\d+)(\d{3})/;
+  while (rgx.test(x1)) {
+    x1 = x1.replace(rgx, '$1' + '.' + '$2');
+  }
+  return x1 + x2;
 }

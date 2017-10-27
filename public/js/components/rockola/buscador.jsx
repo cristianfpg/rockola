@@ -5,6 +5,8 @@ function listItemsFunc(thisH,filtrosArr,listItemsArr){
       key={filtro.id}
       titulo={filtro.titulo}
       thumbnail={filtro.thumbnail}
+      channelTB={filtro.channelTB}
+      views={filtro.views}
       agregar={thisH.handleAgregar}
     />
   );
@@ -41,29 +43,41 @@ class Buscador extends React.Component {
           let titulo = value.snippet.title;
           let id = value.id.videoId;
           if(!value.id.videoId) continue;
-          let queryDuracion = 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails&id='+id+'&key='+apiKey;
+          let queryDuracion = 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet,statistics&id='+id+'&key='+apiKey;
           fetch(queryDuracion)
             .then(function(response) {
               return response.json();
             }).then(function(json) {
               thisH.inputTitle.value = '';
               var duration = json.items[0].contentDetails.duration+'';
+              var channelID = json.items[0].snippet.channelId;
+              var views = json.items[0].statistics.viewCount;
               var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
               var hours = (parseInt(match[1]) || 0);
               var minutes = (parseInt(match[2]) || 0);
               var seconds = (parseInt(match[3]) || 0);
               var totalSegundos = seconds + (minutes*60) + (hours*3600);
               if(totalSegundos >= duracionMin && totalSegundos <= duracionMax){
-                filtros.push({
-                  titulo: titulo,
-                  id: id,
-                  thumbnail: thumbnail
-                });
-                listItemsFunc(thisH,filtros, listItems);
+                let queryChannel = 'https://www.googleapis.com/youtube/v3/channels?part=snippet&id='+channelID+'&key='+apiKey;
+                fetch(queryChannel)
+                  .then(function(response) {
+                    return response.json();
+                  }).then(function(json) {
+                    var channelTB = json.items[0].snippet.thumbnails.default.url;
+                    filtros.push({
+                      titulo: titulo,
+                      id: id,
+                      thumbnail: thumbnail,
+                      channelTB: channelTB,
+                      views: views
+                    });
+                    listItemsFunc(thisH,filtros, listItems);
+                  }).catch(function(ex) {
+                    console.log('parsing failed', ex)
+                  })
               }
             });
           }
-
       }).catch(function(ex) {
         console.log('parsing failed', ex)
       })
@@ -73,17 +87,16 @@ class Buscador extends React.Component {
   }
   render() {
     return (
-      <div>
-        <form id="buscadorkeyword" onSubmit={this.handleSubmit}>
-          <p className="boton-buscador-ayuda">?</p>      
-          <ul class="tooltip">
-            <li>Aparecerán en un rango máximo de {numeroBusqueda} canciones, búsquedas que cumplan con los siguientes parametros:</li>
-            <li>Su duración sea entre los {duracionMin/60} y {duracionMax/60} minutos.</li>
-            <li>Tengan licencia de Youtube®</li>
-          </ul>
-          <input id="buscadorinput" type="text" onChange={this.handleChange} placeholder="Palabra clave ó ID" ref={el => this.inputTitle = el}/>
-        </form>
-      </div>
+      <form id="buscadorkeyword" onSubmit={this.handleSubmit}>
+        <p className="boton-buscador-ayuda">?</p>      
+        <ul class="tooltip">
+          <li>Aparecerán en un rango máximo de {numeroBusqueda} canciones, búsquedas que cumplan con los siguientes parametros:</li>
+          <li>Su duración sea entre los {duracionMin/60} y {duracionMax/60} minutos.</li>
+          <li>Tengan licencia de Youtube®.</li>
+          <li>No sean canales ni playlist creadas.</li>
+        </ul>
+        <input id="buscadorinput" type="text" onChange={this.handleChange} placeholder="Palabra clave ó ID" ref={el => this.inputTitle = el}/>
+      </form>
     );
   }
 }
