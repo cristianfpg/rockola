@@ -201,7 +201,7 @@ app.get('/', function(req, res){
 });
 
 app.get('/signin',function(req,res){
-  req.session.nombre ? res.redirect('/') : res.render('signin');
+  req.session.nombre ? res.redirect('/') : res.render('signin', {msg: ''});
 })
 
 app.get('/logout',function(req,res){
@@ -226,7 +226,7 @@ app.get('/logout',function(req,res){
 app.post('/validarSignin',function(req,res){
   var reqNombre = req.body.nombre;
   // var reqContrasena = sha1(req.body.contrasena);
-  var reqContrasena = req.body.contrasena;
+  var reqContrasena = req.body.nombre;
   Option.find({key: 'sesiones'},function(err, callback){
     var getSettings = callback[0];
     var nuevaArray = getSettings.settings.slice(0);
@@ -241,9 +241,10 @@ app.post('/validarSignin',function(req,res){
           getSettings.save();
           req.session.nombre = reqNombre;
           res.cookie('sesion', reqNombre, { maxAge: 900000000000, httpOnly: false});
-          res.redirect('/');
+          res.redirect('/');          
         }else{
-          res.json('nombre o contraseña incorrectos');
+          // res.json('no esta registrado');
+          res.render('signin',{msg: 'no esta registrado'});
         }
       })
     }else{

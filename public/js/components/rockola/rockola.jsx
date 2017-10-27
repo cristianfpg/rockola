@@ -32,6 +32,7 @@ class Rockola extends React.Component {
   }
   componentWillMount(){
     let thisH = this;
+    var intervalReproductor;
     updatePlaylistFunc(thisH);
     socket.on('update playlist', function(){
       updatePlaylistFunc(thisH);
@@ -40,14 +41,14 @@ class Rockola extends React.Component {
       var urlActual;
       var tiempoActual = msg.tiempoActual+1;
       var tiempoFinal = thisH.state.minFinalReproductor;
-      
       urlActual = msg.urlActual;
-      var intervalReproductor;      
+          
       thisH.setState({minActualReproductor: tiempoActual});
       player.loadVideoById({
         videoId: msg.urlActual,
         startSeconds: msg.tiempoActual
       })
+      player.setVolume(100);
       clearInterval(intervalReproductor);
       intervalReproductor = setInterval(function(){ 
         tiempoActual++; 

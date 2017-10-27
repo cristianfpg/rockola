@@ -9,6 +9,7 @@ var player;
 var primeraVez = true;
 var duracionMin = 180;
 var duracionMax = 360;
+var numeroBusqueda = 50;
 var urlActual;
 
 function fetchFunc(endpoint,response){

@@ -3,12 +3,9 @@ html(lang="es")
   head
     link(rel='stylesheet', href='/css/color.css')
   body
-    form(method='POST' action='/validarSignin')
+    p.error #{msg}
+    form(method='POST', action='/validarSignin' )
       div
         label(for='nombre') Nombre:
-        input#usuario(type='text', placeholder='Nombre' name='nombre')
-      div
-        label(for='contrasena') Contraseña:
-        input#contrasena(type='password', placeholder='Contraseña' name='contrasena' value="")
-      div
-        button(type='submit') Sign up
+        input#nombre(type='text', placeholder='Nombre' name='nombre')
+

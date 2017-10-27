@@ -26,9 +26,12 @@ body *{
   padding: 20px 20px;
   width: 28vw;
   float: right;
+  overflow: auto;
+  padding-bottom: 100px;
 }
 .playlist-item{
   display: block;
+  margin-bottom: 20px;
 }
 .playlist-titulo{
   display: inline-block;
@@ -146,9 +149,45 @@ body *{
   border: none;
   outline: 0;
   text-align: center;
+  display: inline-block;
+  vertical-align: middle;
 }
 #resultados{
   text-align: center;
   width: 70vw;
   float: left;
+  padding-bottom: 100px;
+}
+.boton-buscador-ayuda{
+  background: gray;
+  color: white;
+  display: inline-block;
+  vertical-align: middle;  
+  padding: 3px;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  margin-left: 5px;
+}
+.tooltip{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 150px;
+  border-radius: 4px;
+  background: #eeeeee;
+  text-align: left;
+  margin: 0;
+  padding: 20px 40px;
+  opacity: 0;
+  z-index: 10;
+  font-size: 11px;
+}
+.tooltip li:first-child{
+  list-style: none;
+  margin-bottom: 10px;
+}
+.boton-buscador-ayuda:hover + .tooltip{
+  opacity: 1;
 }

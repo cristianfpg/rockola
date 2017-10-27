@@ -30,7 +30,7 @@ class Buscador extends React.Component {
     let filtros = [];
     let thisH = this;
     let baseQuery = 'https://www.googleapis.com/youtube/v3/search?q=';
-    let parametros = '&part=snippet&maxResults=50&type=video&videoEmbeddable=true&videoDimension=2d&videoLicense=youtube&key='+apiKey;
+    let parametros = '&part=snippet&maxResults='+numeroBusqueda+'&type=video&videoEmbeddable=true&videoDimension=2d&videoLicense=youtube&key='+apiKey;
     let getQuery = baseQuery+thisH.state.value+parametros;
     fetch(getQuery)
       .then(function(response) {
@@ -46,6 +46,7 @@ class Buscador extends React.Component {
             .then(function(response) {
               return response.json();
             }).then(function(json) {
+              thisH.inputTitle.value = '';
               var duration = json.items[0].contentDetails.duration+'';
               var match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
               var hours = (parseInt(match[1]) || 0);
@@ -66,16 +67,21 @@ class Buscador extends React.Component {
       }).catch(function(ex) {
         console.log('parsing failed', ex)
       })
+    this.setState({value: ''});
+    this.inputTitle.value = 'Buscando...'; 
     event.preventDefault();
   }
   render() {
     return (
       <div>
         <form id="buscadorkeyword" onSubmit={this.handleSubmit}>
-          <input type="text" onChange={this.handleChange} placeholder="palabra clave"/>
-          {/*
-          <input type="submit" value="submit"/>
-          */}
+          <p className="boton-buscador-ayuda">?</p>      
+          <ul class="tooltip">
+            <li>Aparecerán en un rango máximo de {numeroBusqueda} canciones, búsquedas que cumplan con los siguientes parametros:</li>
+            <li>Su duración sea entre los {duracionMin/60} y {duracionMax/60} minutos.</li>
+            <li>Tengan licencia de Youtube®</li>
+          </ul>
+          <input id="buscadorinput" type="text" onChange={this.handleChange} placeholder="Palabra clave ó ID" ref={el => this.inputTitle = el}/>
         </form>
       </div>
     );
