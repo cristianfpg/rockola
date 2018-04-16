@@ -6,31 +6,28 @@ tag.src = "https://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 var player;
-var primeraVez = true;
 var duracionMin = 180;
 var duracionMax = 540;
 var numeroBusqueda = 30;
 var urlActual;
 
-function fetchFunc(endpoint,response){
-  fetch(endpoint)
+// base endpoints
+var epSearch = 'https://www.googleapis.com/youtube/v3/search?q=';
+var epDetails = 'https://www.googleapis.com/youtube/v3/videos?part=contentDetails,snippet,statistics&id=';
+
+// params
+var pSearch = '&part=snippet&maxResults='+numeroBusqueda+'&type=video&videoEmbeddable=true&videoDimension=2d&videoLicense=youtube&key='+apiKey;
+var pDetails = '';
+
+function fetchQuery(query,dataResponse){
+  fetch(query)
     .then(function(response) {
       return response.json();
     }).then(function(json) {
-      response(json)
+      dataResponse(json);
     }).catch(function(ex) {
       console.log(ex);
     })
-}
-function readCookie(name) {
-  var nameEQ = name + "=";
-  var ca = document.cookie.split(';');
-  for(var i=0;i < ca.length;i++) {
-      var c = ca[i];
-      while (c.charAt(0)==' ') c = c.substring(1,c.length);
-      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-  }
-  return null;
 }
 
 function onYouTubeIframeAPIReady() {
@@ -48,15 +45,4 @@ function onYouTubeIframeAPIReady() {
 }
 function onPlayerReady(event) {
   socket.emit('tiempo actual');
-}
-function formatearNumero(nStr) {
-  nStr += '';
-  x = nStr.split('.');
-  x1 = x[0];
-  x2 = x.length > 1 ? ',' + x[1] : '';
-  var rgx = /(\d+)(\d{3})/;
-  while (rgx.test(x1)) {
-    x1 = x1.replace(rgx, '$1' + '.' + '$2');
-  }
-  return x1 + x2;
 }
