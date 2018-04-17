@@ -4,7 +4,7 @@ class PlayerBar extends React.Component {
     }
     render() {
       return (
-        <div className="player-bar">player-bar</div>     
+        <div className="player-bar"></div>  
       );
     }
   }

@@ -2,3 +2,18 @@ body *{
   font-family: 'helvetica';
   font-weight: 300;
 }
+.search-bar, .results{
+  position: absolute;
+  right: 0;
+}
+.search-bar{
+  top: 0;
+  z-index: 1;
+}
+.results{
+  bottom: 0;
+  width: 20vw;
+  height: 100vh;
+  overflow: scroll;
+  z-index: 0;
+}

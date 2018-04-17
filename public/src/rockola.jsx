@@ -4,16 +4,13 @@ class Rockola extends React.Component {
       this.state = {results: ''};
     }
     render() {
-      const _this = this;
-      setTimeout(function(){
-        _this.setState({results: 'ss'});
-      }, 1000);
       return (
         <div id="main-container">
           <SearchBar/>
-          <Results prueba={this.state.results}/>
+          <Results/>
           <Playlist/>      
-          <PlayerBar/>      
+          <PlayerBar/>
+          <div id="iframe-yt"></div> 
         </div>
       );
     }
