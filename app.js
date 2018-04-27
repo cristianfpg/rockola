@@ -1,4 +1,4 @@
-// variables e iniciaciones
+// ---------- variables iniciales -----------
 var express = require('express');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
@@ -9,6 +9,7 @@ var io = require('socket.io')(http);
 var mongoose = require('mongoose');
 var sha1 = require('sha1');
 
+// --------- primeras ejecuciones -----------
 mongoose.Promise = require('bluebird');
 mongoose.connect('mongodb://localhost:27017/rockola',{useMongoClient: true});
 
@@ -31,6 +32,8 @@ var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open',function(){});
 
+// ---------- variables secundarias --------
+
 var defaultIdkey = '_Uie2r5wWxw';
 var defaultTitle = 'Título por defecto del servidor.';
 var defaultDuration = 120;
@@ -43,20 +46,50 @@ var actualTime = 0;
 var timeInterval;
 var serialSong = 0;
 
-var songSchema = mongoose.Schema({
-  idkey: {type: String, required: true, unique: true},
-  duration: {type: Number, required: true},
-  title: {type: String, default: defaultTitle},
-  sthumbnail: {type: String, default: ''},
-  playlist: {type: Boolean, default: true},
-  serial: {type: Number, required: true}
-},
-{
-  timestamps: true
+var userSchema = mongoose.Schema({
+  name: {type: String, required: true, unique: true},
+  password: {type: String, required: true},
+  songs_finished: {type: Number, default: 0},
+  songs_skipped: {type: Number, default: 0}
 });
+
+var songSchema = mongoose.Schema(
+  {
+    idkey: {type: String, required: true, unique: true},
+    duration: {type: Number, required: true},
+    title: {type: String, default: defaultTitle},
+    sthumbnail: {type: String, default: ''},
+    playlist: {type: Boolean, default: true},
+    serial: {type: Number, required: true}
+  },{
+    timestamps: true
+  }
+);
+
+var optionSchema = mongoose.Schema({
+  key: {type: String, required: true, unique: true},
+  settings: {type: {}, default: {}}
+});
+
+var User = mongoose.model('User', userSchema);
 var Song = mongoose.model('Song', songSchema);
+var Option = mongoose.model('Option', optionSchema);
+
+/* primeras acciones para la base de datos (necesarias para que corra la aplicacion de 1ro)*/
 
 /*
+var newUser = new User({
+  name: 'cristian',
+  password: 'cristian'
+});
+newUser.save();
+
+var newUser = new User({
+  name: 'fabian',
+  password: 'fabian'
+});
+newUser.save();
+
 var newSong = new Song({
   idkey: defaultIdkey,
   title: defaultTitle,
@@ -64,8 +97,15 @@ var newSong = new Song({
   serial: serialSong
 })
 newSong.save();
+
+var option = new Option({
+  key: 'sessions',
+  settings: []
+});
+option.save();
 */
 
+// ----- funciones ------------
 function initRockola(){
   Song.findOne({playlist: true}).sort({updatedAt: 1}).exec(function(err, callback) { 
     if(!callback){
@@ -142,16 +182,100 @@ io.on('connection', function(socket){
   });
 });
 
-// endpoints y rutas
+Option.find({key: 'sessions'},function(err, callback){
+  var getSettings = callback[0];
+  getSettings.settings = [];
+  getSettings.save();
+})
+
+// --------- endpoints y rutas -------------
+// GET
 app.get('/', function(req, res){
-  res.render('rockola');
+  req.session.name ? res.render('rockola') : res.redirect('/signin');
 });
+
+app.get('/signin',function(req,res){
+  if(req.query.error) {
+    switch(req.query.error){
+      case 'nosignup':
+        res.render('signin',{msg:'No esta registrado.'});
+        break;
+      case 'alreadylogged':
+        res.render('signin',{msg:'Ya esta logueado.'});
+        break; 
+      case 'wrongdata':
+        res.render('signin',{msg:'Datos incorrectos.'});
+        break; 
+      case 'null':
+        res.render('signin',{msg:'Ingrese los datos.'});
+        break;   
+      default:
+        res.render('signin',{msg:''});
+        break;
+    }
+  }else{
+    req.session.name ? res.redirect('/') : res.render('signin',{msg:''});
+  }
+})
 
 app.get('/getplaylist', function(req, res){
   Song.find({playlist: true}).sort({serial: 1, updatedAt: 1}).exec(function(err, callback) { 
     res.json(callback);
   });
 });
+
+app.get('/skipsong',function(req,res){
+  skipSong();
+  res.json({response: 'skip song'});
+})
+
+app.get('/logout',function(req,res){
+  if(req.session.name){
+    Option.find({key: 'sessions'},function(err, callback){
+      var getSettings = callback[0];
+      var newArray = getSettings.settings.slice(0);
+      var index = newArray.map(function (e) { return e.name; }).indexOf(req.session.name);
+      newArray.splice(index, 1);
+      getSettings.settings = newArray;
+      getSettings.save();
+      res.clearCookie('session');
+      req.session.destroy();
+      res.json('Successful logout');
+    })
+  }else{
+    res.redirect('/');  
+  }
+})
+
+// POST
+app.post('/validatesignin',function(req,res){
+  var reqName = req.body.name;
+  var reqPassword = req.body.password;
+  Option.find({key: 'sessions'},function(err, callback){
+    var getSettings = callback[0];
+    var newArray = getSettings.settings.slice(0);
+    function checkArray(data){
+      return data.name == reqName;
+    }
+    if(!getSettings.settings.find(checkArray) && reqName){
+      User.find({name: reqName},function(err, callback){
+        if(!callback) res.redirect('/signin?error=nosignup');
+        if(callback.length == 1 && callback[0].password == reqPassword){
+          newArray.push({name: reqName});
+          getSettings.settings = newArray;
+          getSettings.save();
+          req.session.name = reqName;
+          res.cookie('session', reqName, { maxAge: 900000000000, httpOnly: false});
+          res.redirect('/');        
+        }else{
+          res.redirect('/signin?error=wrongdata');
+        }
+      })
+    }else{
+      reqName ? res.redirect('/signin?error=alreadylogged') : res.redirect('/signin?error=null');
+    }
+  })
+})
 
 app.post('/addtoplaylist',function(req,res){
   Song.findOne({idkey: req.body.idkey}).exec(function(err, callback) {
@@ -179,10 +303,7 @@ app.post('/addtoplaylist',function(req,res){
     }
   });  
 });
-app.get('/skipsong',function(req,res){
-  skipSong();
-  res.json({response: 'skip song'});
-})
+
 http.listen(3000, function(){
   console.log('listening on *:3000');
 });

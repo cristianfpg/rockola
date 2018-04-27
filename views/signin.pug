@@ -4,8 +4,10 @@ html(lang="es")
     link(rel='stylesheet', href='/css/color.css')
   body
     div.signin
-      form(method='POST', action='/validarSignin' )
-        input#nombre(type='text', placeholder='Login' name='nombre')
+      form(method='POST', action='/validatesignin' )
+        input#name(type='text' placeholder='Name' name='name')
+        input#password(type='password' placeholder='Password' name='password')
+        input(type='submit' name='enviar')
       p.error #{msg}
     
 
