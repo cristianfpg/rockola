@@ -49,6 +49,9 @@ var serialSong = 0;
 var userSchema = mongoose.Schema({
   name: {type: String, required: true, unique: true},
   password: {type: String, required: true},
+  admin: {type: Boolean, default: false},
+  player: {type: Boolean, default: false},
+  block: {type: Boolean, default: false},
   songs_finished: {type: Number, default: 0},
   songs_skipped: {type: Number, default: 0}
 });
@@ -78,15 +81,18 @@ var Option = mongoose.model('Option', optionSchema);
 /* primeras acciones para la base de datos (necesarias para que corra la aplicacion de 1ro)*/
 
 /*
+
 var newUser = new User({
   name: 'cristian',
-  password: 'cristian'
+  password: 'cristian',
+  admin: true
 });
 newUser.save();
 
 var newUser = new User({
-  name: 'fabian',
-  password: 'fabian'
+  name: 'player',
+  password: 'player',
+  player: true
 });
 newUser.save();
 
@@ -103,6 +109,7 @@ var option = new Option({
   settings: []
 });
 option.save();
+
 */
 
 // ----- funciones ------------
@@ -189,9 +196,10 @@ Option.find({key: 'sessions'},function(err, callback){
 })
 
 // --------- endpoints y rutas -------------
-// GET
+// RUTAS GET
 app.get('/', function(req, res){
-  req.session.name ? res.render('rockola') : res.redirect('/signin');
+  // req.session.name ? res.render('rockola') : res.redirect('/signin');
+  res.render('rockola');
 });
 
 app.get('/signin',function(req,res){
@@ -214,20 +222,74 @@ app.get('/signin',function(req,res){
         break;
     }
   }else{
-    req.session.name ? res.redirect('/') : res.render('signin',{msg:''});
+    // req.session.name ? res.redirect('/') : res.render('signin',{msg:''});
+    res.render('signin',{msg:''});
   }
 })
 
+app.get('/dj',function(req,res){
+  var actualSession = req.session.name;
+  User.findOne({name: actualSession},function(err, callback){
+    if(callback){
+      if(callback.admin){
+        // switch(req.query.option) {
+        //   case 'sessions':
+        //     Option.find({key: 'sessions'},function(err, callback){
+        //       res.render('dj',{callback: callback});
+        //     });     
+        //     break;
+        //   case 'users':
+        //     User.find({},function(err, callback){
+        //       var newCallback = callback.map(function(data){
+        //         return data.name+', ';
+        //         // return {name: data.name, finished: data.songs_finished};
+        //       });
+        //       res.render('dj',{callback: newCallback});
+        //     });     
+        //     break;
+        //   default:
+        //     res.render('dj');
+        //     break;
+        // }
+        res.render('dj');
+      }else{
+        res.redirect('/');    
+      }
+    }else{
+      res.json({msg: 'No existe la sesión'});
+    }
+  });
+});
+
+// ENDPOINTS GET
 app.get('/getplaylist', function(req, res){
   Song.find({playlist: true}).sort({serial: 1, updatedAt: 1}).exec(function(err, callback) { 
     res.json(callback);
   });
 });
 
-app.get('/skipsong',function(req,res){
-  skipSong();
-  res.json({response: 'skip song'});
-})
+// app.get('/skipsong',function(req,res){
+//   skipSong();
+//   res.json({response: 'skip song'});
+// })
+
+// app.get('/getsession',function(req,res){
+//   res.json({name: req.session.name});
+// });
+
+app.get('/getsessions',function(req,res){
+  Option.findOne({key: 'sessions'},function(err, callback){
+    var newCallback = callback.settings;
+    res.json({data: newCallback});
+  });
+});
+
+app.get('/getusers',function(req,res){
+  User.find({},function(err, callback){
+    var newCallback = callback;
+    res.json({data: newCallback});
+  });
+});
 
 app.get('/logout',function(req,res){
   if(req.session.name){
@@ -247,7 +309,7 @@ app.get('/logout',function(req,res){
   }
 })
 
-// POST
+// ENDPOINTS POST
 app.post('/validatesignin',function(req,res){
   var reqName = req.body.name;
   var reqPassword = req.body.password;
@@ -266,7 +328,8 @@ app.post('/validatesignin',function(req,res){
           getSettings.save();
           req.session.name = reqName;
           res.cookie('session', reqName, { maxAge: 900000000000, httpOnly: false});
-          res.redirect('/');        
+          // res.redirect('/');   
+          res.redirect('/signin');   
         }else{
           res.redirect('/signin?error=wrongdata');
         }
@@ -298,8 +361,33 @@ app.post('/addtoplaylist',function(req,res){
         serial: serial
       })
       newSong.save(function(){
-        res.json({msg: 'Agregada'});  
+        res.json({msg: 'Agregada'});
       });
+    }
+  });  
+});
+
+app.post('/editusers',function(req,res){
+  var stateToChange = req.body.state.split(':');
+  var newName = req.body.newname;
+  if(req.body.newname == '') newName = req.body.actualname;
+  var newObject = { name: newName, password: req.body.newname, state: false };  
+  switch(stateToChange[0]){
+    case 'admin':
+      newObject.admin = stateToChange[1];
+      break;
+    case 'player':
+      newObject.player = stateToChange[1];
+      break;
+    case 'block':
+      newObject.block = stateToChange[1];
+      break;
+  }
+  User.update({name: req.body.actualname},{$set: newObject},function(err, callback){
+    if(callback.n == 1 && callback.nModified == 1){
+      res.json('listo');
+    }else{
+      res.json('Sin cambios');   
     }
   });  
 });

@@ -5,8 +5,8 @@ html(lang="es")
   body
     div.signin
       form(method='POST', action='/validatesignin' )
-        input#name(type='text' placeholder='Name' name='name')
-        input#password(type='password' placeholder='Password' name='password')
+        input#name(type='text' placeholder='Name' name='name' value='cristian')
+        input#password(type='password' placeholder='Password' name='password' value='cristian')
         input(type='submit' name='enviar')
       p.error #{msg}
     
