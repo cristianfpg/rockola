@@ -3,11 +3,10 @@ html(lang="es")
   head
     link(rel='stylesheet', href='/css/color.css')
   body
-    div.signin
-      form(method='POST', action='/validatesignin' )
-        input#name(type='text' placeholder='Name' name='name' value='cristian')
-        input#password(type='password' placeholder='Password' name='password' value='cristian')
-        input(type='submit' name='enviar')
-      p.error #{msg}
-    
-
+    <a href="https://slack.com/oauth/authorize?scope=identity.basic,identity.email,identity.avatar&client_id=109990022788.355415375331"><img alt="Sign in with Slack" height="40" width="172" src="https://platform.slack-edge.com/img/sign_in_with_slack.png" srcset="https://platform.slack-edge.com/img/sign_in_with_slack.png 1x, https://platform.slack-edge.com/img/sign_in_with_slack@2x.png 2x" /></a>
+    //- div.signin
+      //- form(method='POST', action='/validatesignin' )
+        //- input#name(type='text' placeholder='Name' name='name' value='cristian')
+        //- input#password(type='password' placeholder='Password' name='password' value='cristian')
+        //- input(type='submit' name='enviar')
+      //- p.error #{msg}

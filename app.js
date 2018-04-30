@@ -7,7 +7,8 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mongoose = require('mongoose');
-var sha1 = require('sha1');
+var request = require('request');
+require('dotenv').config();
 
 // --------- primeras ejecuciones -----------
 mongoose.Promise = require('bluebird');
@@ -47,8 +48,8 @@ var timeInterval;
 var serialSong = 0;
 
 var userSchema = mongoose.Schema({
-  name: {type: String, required: true, unique: true},
-  password: {type: String, required: true},
+  email: {type: String, required: true, unique: true, min: 1},
+  name: {type: String, required: true, min: 1},
   admin: {type: Boolean, default: false},
   player: {type: Boolean, default: false},
   block: {type: Boolean, default: false},
@@ -83,16 +84,9 @@ var Option = mongoose.model('Option', optionSchema);
 /*
 
 var newUser = new User({
-  name: 'cristian',
-  password: 'cristian',
+  name: 'admin',
+  email: 'desarrollo1@coloralcuadrado.com',
   admin: true
-});
-newUser.save();
-
-var newUser = new User({
-  name: 'player',
-  password: 'player',
-  player: true
 });
 newUser.save();
 
@@ -198,16 +192,15 @@ Option.find({key: 'sessions'},function(err, callback){
 // --------- endpoints y rutas -------------
 // RUTAS GET
 app.get('/', function(req, res){
-  // req.session.name ? res.render('rockola') : res.redirect('/signin');
-  res.render('rockola');
+  req.session.email ? res.render('rockola') : res.redirect('/signin');
 });
 
 app.get('/signin',function(req,res){
   if(req.query.error) {
     switch(req.query.error){
-      case 'nosignup':
-        res.render('signin',{msg:'No esta registrado.'});
-        break;
+      // case 'nosignup':
+      //   res.render('signin',{msg:'No esta registrado.'});
+      //   break;
       case 'alreadylogged':
         res.render('signin',{msg:'Ya esta logueado.'});
         break; 
@@ -222,41 +215,21 @@ app.get('/signin',function(req,res){
         break;
     }
   }else{
-    // req.session.name ? res.redirect('/') : res.render('signin',{msg:''});
-    res.render('signin',{msg:''});
+    req.session.email ? res.redirect('/') : res.render('signin',{msg:''});
   }
 })
 
 app.get('/dj',function(req,res){
-  var actualSession = req.session.name;
-  User.findOne({name: actualSession},function(err, callback){
+  var actualSession = req.session.email;
+  User.findOne({email: actualSession},function(err, callback){
     if(callback){
       if(callback.admin){
-        // switch(req.query.option) {
-        //   case 'sessions':
-        //     Option.find({key: 'sessions'},function(err, callback){
-        //       res.render('dj',{callback: callback});
-        //     });     
-        //     break;
-        //   case 'users':
-        //     User.find({},function(err, callback){
-        //       var newCallback = callback.map(function(data){
-        //         return data.name+', ';
-        //         // return {name: data.name, finished: data.songs_finished};
-        //       });
-        //       res.render('dj',{callback: newCallback});
-        //     });     
-        //     break;
-        //   default:
-        //     res.render('dj');
-        //     break;
-        // }
         res.render('dj');
       }else{
         res.redirect('/');    
       }
     }else{
-      res.json({msg: 'No existe la sesión'});
+      res.json({msg: 'Denegado'});
     }
   });
 });
@@ -268,14 +241,10 @@ app.get('/getplaylist', function(req, res){
   });
 });
 
-// app.get('/skipsong',function(req,res){
-//   skipSong();
-//   res.json({response: 'skip song'});
-// })
-
-// app.get('/getsession',function(req,res){
-//   res.json({name: req.session.name});
-// });
+app.get('/skipsong',function(req,res){
+  skipSong();
+  res.json({response: 'skip song'});
+})
 
 app.get('/getsessions',function(req,res){
   Option.findOne({key: 'sessions'},function(err, callback){
@@ -292,11 +261,11 @@ app.get('/getusers',function(req,res){
 });
 
 app.get('/logout',function(req,res){
-  if(req.session.name){
+  if(req.session.email){
     Option.find({key: 'sessions'},function(err, callback){
       var getSettings = callback[0];
       var newArray = getSettings.settings.slice(0);
-      var index = newArray.map(function (e) { return e.name; }).indexOf(req.session.name);
+      var index = newArray.map(function (e) { return e.name; }).indexOf(req.session.email);
       newArray.splice(index, 1);
       getSettings.settings = newArray;
       getSettings.save();
@@ -309,36 +278,52 @@ app.get('/logout',function(req,res){
   }
 })
 
-// ENDPOINTS POST
-app.post('/validatesignin',function(req,res){
-  var reqName = req.body.name;
-  var reqPassword = req.body.password;
-  Option.find({key: 'sessions'},function(err, callback){
-    var getSettings = callback[0];
-    var newArray = getSettings.settings.slice(0);
-    function checkArray(data){
-      return data.name == reqName;
-    }
-    if(!getSettings.settings.find(checkArray) && reqName){
-      User.find({name: reqName},function(err, callback){
-        if(!callback) res.redirect('/signin?error=nosignup');
-        if(callback.length == 1 && callback[0].password == reqPassword){
-          newArray.push({name: reqName});
-          getSettings.settings = newArray;
-          getSettings.save();
-          req.session.name = reqName;
-          res.cookie('session', reqName, { maxAge: 900000000000, httpOnly: false});
-          // res.redirect('/');   
-          res.redirect('/signin');   
-        }else{
-          res.redirect('/signin?error=wrongdata');
+app.get('/validatesignin',function(req,res){
+  if(req.session.email) res.redirect('/');
+  var endpointSlack = "https://slack.com/api/oauth.access?client_id="+process.env.CLIENTID+"&client_secret="+process.env.CLIENTSECRET+"&code="+req.query.code;
+  request(endpointSlack, function (error, response, body) {
+    var resJson = JSON.parse(body);
+    if(resJson.ok){
+      Option.find({key: 'sessions'},function(err, callback){
+        var getSettings = callback[0];
+        var newArray = getSettings.settings.slice(0);
+        var reqEmail = resJson.user.email;
+        var reqName = resJson.user.name;
+        var reqImage = resJson.user.image_512;
+        function checkArray(data){
+          return data.email == reqEmail;
         }
-      })
+        // si no encuentra sesiones && el correo lo enviaron
+        if(!getSettings.settings.find(checkArray) && reqEmail){
+          User.find({email: reqEmail},function(err, callback){          
+            // no esta registrado
+            if(!callback) res.redirect('/signin?error=nosignup');
+            // esta registrado y no esta logueado: unica opcion que deja pasar
+            if(callback.length == 1){
+              newArray.push({email: reqEmail, name: reqName, image: reqImage});
+              getSettings.settings = newArray;
+              getSettings.save();
+              req.session.email = reqEmail;
+              res.cookie('session', reqEmail, { maxAge: 900000000000, httpOnly: false});
+              res.redirect('/');   
+            }else{
+              // no deberia llegar hasta aca con la autenticacion de slack
+              res.json({msg: "Hubo un error en la autenticacion."});
+            }
+          })    
+        }else{
+          // cuando encuentra sesion o el correo es vacio 
+          reqName ? res.redirect('/signin?error=alreadylogged') : res.redirect('/signin?error=null');
+        }
+      })    
     }else{
-      reqName ? res.redirect('/signin?error=alreadylogged') : res.redirect('/signin?error=null');
+      // error del oauth 2.0
+      res.json({msg: resJson.error});
     }
-  })
-})
+  });
+})  
+
+// ENDPOINTS POST
 
 app.post('/addtoplaylist',function(req,res){
   Song.findOne({idkey: req.body.idkey}).exec(function(err, callback) {
@@ -366,12 +351,21 @@ app.post('/addtoplaylist',function(req,res){
     }
   });  
 });
-
+app.post('/createuser',function(req,res){
+  if(req.body.name){    
+    var newUser = new User({
+      name: req.body.name,
+      password: req.body.name,
+    });
+    newUser.save();
+    res.json('Parametros enviados');
+  }else{
+    res.json('Null');
+  }
+})
 app.post('/editusers',function(req,res){
   var stateToChange = req.body.state.split(':');
-  var newName = req.body.newname;
-  if(req.body.newname == '') newName = req.body.actualname;
-  var newObject = { name: newName, password: req.body.newname, state: false };  
+  var newObject = { };  
   switch(stateToChange[0]){
     case 'admin':
       newObject.admin = stateToChange[1];
@@ -383,7 +377,7 @@ app.post('/editusers',function(req,res){
       newObject.block = stateToChange[1];
       break;
   }
-  User.update({name: req.body.actualname},{$set: newObject},function(err, callback){
+  User.update({email: req.body.email},{$set: newObject},function(err, callback){
     if(callback.n == 1 && callback.nModified == 1){
       res.json('listo');
     }else{

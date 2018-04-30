@@ -1,33 +1,29 @@
 class Dj extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {fetchget: null, actualvalue: '', newvalue: '', statevalue: ''};
+    this.state = {fetchget: null, useremail: '', statevalue: ''};
     this.handleEditUsers = this.handleEditUsers.bind(this);
-    this.handleChangeActual = this.handleChangeActual.bind(this);
-    this.handleChangeNew = this.handleChangeNew.bind(this);
+    this.handleChangeEmail = this.handleChangeEmail.bind(this);
     this.handleChangeState = this.handleChangeState.bind(this);
   }
   handleFetchGet(e){
     const _this = this;
     fetchGet(e,function(data){
-      var getSessions = data.data.map((response)=>{
+      var getData = data.data.map((response)=>{
+    console.log(e);        
         switch(e){
           case '/getsessions':
             return <li>{response.name}</li>;
           case '/getusers':
-            return <li>nombre: {response.name}<br/>admin: {response.admin+''}<br/>player: {response.player+''}<br/>block: {response.block+''}</li>;
+            return <li>email: {response.email}<br/>nombre: {response.name}<br/>admin: {response.admin+''}<br/>player: {response.player+''}<br/>block: {response.block+''}</li>;
         }
       });
-      _this.setState({fetchget: getSessions});
+      _this.setState({fetchget: getData});
     });
   }
 
-  handleChangeActual(e) {
-    this.setState({actualvalue: e.target.value});
-  }
-
-  handleChangeNew(e) {
-    this.setState({newvalue: e.target.value});
+  handleChangeEmail(e) {
+    this.setState({useremail: e.target.value});
   }
 
   handleChangeState(e) {
@@ -38,8 +34,7 @@ class Dj extends React.Component {
     e.preventDefault();
     const _this = this;
     fetchPost('/editusers',{
-      actualname: _this.state.actualvalue,
-      newname: _this.state.newvalue,
+      email: _this.state.useremail,
       state: _this.state.statevalue      
     },
     function(json){
@@ -58,14 +53,8 @@ class Dj extends React.Component {
         <div>
           <p>Edicion de usuario</p>
           <form onSubmit={this.handleEditUsers}>
-            <label>Nombre actual</label>
-            <input type="text" onChange={this.handleChangeActual} defaultValue={this.state.actualvalue}/>
-            <label>Nombre nuevo</label>
-            <input type="text" onChange={this.handleChangeNew} defaultValue={this.state.newvalue}/>
-            {/* <div>
-              <p>Cambio estado</p>
-              <input type="text" onChange={this.handleChangeActual} defaultValue={this.state.actualvalue}/>
-            </div> */}
+            <label>Email</label>
+            <input type="text" onChange={this.handleChangeEmail} defaultValue={this.state.useremail}/>
             <label>Cambio estado</label>
             <input type="text" onChange={this.handleChangeState} defaultValue={this.state.statevalue} placeholder="perfil:estado"/>
             <input type="submit"/>
