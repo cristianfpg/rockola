@@ -17,3 +17,16 @@ body *{
   overflow: scroll;
   z-index: 0;
 }
+#iframe-yt{
+  opacity: 0;
+  visibility: hidden;
+}
+.player-bar{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background-color: rgb(179, 179, 179);
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+}

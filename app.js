@@ -60,11 +60,13 @@ var userSchema = mongoose.Schema({
 var songSchema = mongoose.Schema(
   {
     idkey: {type: String, required: true, unique: true},
+    serial: {type: Number, required: true, unique: true},
     duration: {type: Number, required: true},
+    owner: {type: String, required: true, min: 1},
     title: {type: String, default: defaultTitle},
     sthumbnail: {type: String, default: ''},
     playlist: {type: Boolean, default: true},
-    serial: {type: Number, required: true}
+    score: {type: Number, default: 0}
   },{
     timestamps: true
   }
@@ -72,7 +74,7 @@ var songSchema = mongoose.Schema(
 
 var optionSchema = mongoose.Schema({
   key: {type: String, required: true, unique: true},
-  settings: {type: {}, default: {}}
+  settings: {type: [], default: []}
 });
 
 var User = mongoose.model('User', userSchema);
@@ -93,8 +95,9 @@ newUser.save();
 var newSong = new Song({
   idkey: defaultIdkey,
   title: defaultTitle,
+  owner: 'desarrollo1@coloralcuadrado.com',
   duration: defaultDuration,
-  serial: serialSong
+  serial: serialSong,
 })
 newSong.save();
 
@@ -104,7 +107,14 @@ var option = new Option({
 });
 option.save();
 
+var option = new Option({
+  key: 'votes',
+  settings: [1]
+});
+option.save();
+
 */
+
 
 // ----- funciones ------------
 function initRockola(){
@@ -122,7 +132,7 @@ function initRockola(){
       updateVariables(callback);
       initTimer(actualDuration);
       Song.findOne({}).sort({serial: -1}).exec(function(err, callback) { 
-        serial = callback.serial;
+        serialSong = callback.serial;
       });
     }
   });
@@ -155,22 +165,39 @@ function setNewSong(){
         });
         initTimer(defaultDuration);  
         io.emit('get actual song', [defaultIdkey,0]);
-        io.emit('update playlist');        
+        io.emit('update playlist');
+        io.emit('new song');
       });     
     }else{
       updateVariables(callback);
       initTimer(actualDuration);  
       io.emit('get actual song', [actualIdkey,0]); 
       io.emit('update playlist');        
+      io.emit('new song');
     }
   }); 
 }
 
 function skipSong(){
   Song.update({idkey: actualIdkey},{$set:{ playlist: false }},function(err, callback){
-    setNewSong();
+    Option.update({key: 'votes'},{$set:{ settings: [1] }},function(err, callback){
+      setNewSong();
+    })  
   });
 }
+
+function createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res){
+  var cookieString;
+  newArray.push({email: reqEmail, name: reqName, image: reqImage});
+  getSettings.settings = newArray;
+  getSettings.save();
+  req.session.email = reqEmail;
+  req.session.name = reqName;
+  req.session.image = reqImage;
+  cookieString = reqEmail+'|'+reqName+'|'+reqImage;
+  res.cookie('session', cookieString, { maxAge: 900000000000, httpOnly: false});
+}
+
 io.on('connection', function(socket){
   socket.on('update results', function(msg){
     socket.emit('update results',msg);
@@ -190,7 +217,17 @@ Option.find({key: 'sessions'},function(err, callback){
 })
 
 // --------- endpoints y rutas -------------
+
 // RUTAS GET
+app.get('/guestsession',function(req,res){
+  if(req.session.email){
+    res.redirect('/');
+  }else{
+    req.session.email = 'guest';
+    res.json({msg: 'Invitado logueado'});
+  }
+})
+
 app.get('/', function(req, res){
   req.session.email ? res.render('rockola') : res.redirect('/signin');
 });
@@ -198,9 +235,6 @@ app.get('/', function(req, res){
 app.get('/signin',function(req,res){
   if(req.query.error) {
     switch(req.query.error){
-      // case 'nosignup':
-      //   res.render('signin',{msg:'No esta registrado.'});
-      //   break;
       case 'alreadylogged':
         res.render('signin',{msg:'Ya esta logueado.'});
         break; 
@@ -241,11 +275,6 @@ app.get('/getplaylist', function(req, res){
   });
 });
 
-app.get('/skipsong',function(req,res){
-  skipSong();
-  res.json({response: 'skip song'});
-})
-
 app.get('/getsessions',function(req,res){
   Option.findOne({key: 'sessions'},function(err, callback){
     var newCallback = callback.settings;
@@ -265,7 +294,7 @@ app.get('/logout',function(req,res){
     Option.find({key: 'sessions'},function(err, callback){
       var getSettings = callback[0];
       var newArray = getSettings.settings.slice(0);
-      var index = newArray.map(function (e) { return e.name; }).indexOf(req.session.email);
+      var index = newArray.map(function (e) { return e.email; }).indexOf(req.session.email);
       newArray.splice(index, 1);
       getSettings.settings = newArray;
       getSettings.save();
@@ -274,7 +303,7 @@ app.get('/logout',function(req,res){
       res.json('Successful logout');
     })
   }else{
-    res.redirect('/');  
+    res.redirect('/');
   }
 })
 
@@ -289,7 +318,7 @@ app.get('/validatesignin',function(req,res){
         var newArray = getSettings.settings.slice(0);
         var reqEmail = resJson.user.email;
         var reqName = resJson.user.name;
-        var reqImage = resJson.user.image_512;
+        var reqImage = resJson.user.image_192;
         function checkArray(data){
           return data.email == reqEmail;
         }
@@ -300,15 +329,18 @@ app.get('/validatesignin',function(req,res){
             if(!callback) res.redirect('/signin?error=nosignup');
             // esta registrado y no esta logueado: unica opcion que deja pasar
             if(callback.length == 1){
-              newArray.push({email: reqEmail, name: reqName, image: reqImage});
-              getSettings.settings = newArray;
-              getSettings.save();
-              req.session.email = reqEmail;
-              res.cookie('session', reqEmail, { maxAge: 900000000000, httpOnly: false});
-              res.redirect('/');   
+              createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res);
+              res.redirect('/'); 
             }else{
-              // no deberia llegar hasta aca con la autenticacion de slack
-              res.json({msg: "Hubo un error en la autenticacion."});
+              // crea el usuario si es la 1ra vez que entra
+              var newUser = new User({
+                name: reqName,
+                email: reqEmail
+              });
+              newUser.save(function(){
+                createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res);         
+              });
+              res.json({msg: "¡Usuario nuevo!"});
             }
           })    
         }else{
@@ -323,46 +355,46 @@ app.get('/validatesignin',function(req,res){
   });
 })  
 
+app.get('/getvotes',function(req,res){
+  Option.find({key: 'votes'},function(err, callback){
+    res.json({msg: callback[0].settings[0]});
+  })
+});
+
 // ENDPOINTS POST
 
 app.post('/addtoplaylist',function(req,res){
-  Song.findOne({idkey: req.body.idkey}).exec(function(err, callback) {
-    serial++;
-    if(callback){
-      Song.findOne({idkey: req.body.idkey, playlist: false}).exec(function(errtwo, callbacktwo) {
-        if(!callbacktwo){
-          res.json({msg: 'Ya esta en la playlist.'});
-        }else{
-          Song.update({idkey: req.body.idkey},{$set:{ playlist: true, serial: serial }},function(errthree, callbackthree){
-            res.json({msg: 'Agregada'});       
-          });
-        }
-      });
-    }else{
-      var newSong = new Song({
-        idkey: req.body.idkey,
-        title: req.body.title,
-        duration: req.body.duration,
-        serial: serial
-      })
-      newSong.save(function(){
-        res.json({msg: 'Agregada'});
-      });
-    }
-  });  
-});
-app.post('/createuser',function(req,res){
-  if(req.body.name){    
-    var newUser = new User({
-      name: req.body.name,
-      password: req.body.name,
-    });
-    newUser.save();
-    res.json('Parametros enviados');
+  if(req.body.owner){
+    Song.findOne({idkey: req.body.idkey}).exec(function(err, callback) {
+      serialSong++;
+      if(callback){
+        Song.findOne({idkey: req.body.idkey, playlist: false}).exec(function(errtwo, callbacktwo) {
+          if(!callbacktwo){
+            res.json({msg: 'Ya esta en la playlist.'});
+          }else{
+            Song.update({idkey: req.body.idkey},{$set:{ playlist: true, serial: serialSong, owner: req.body.owner }},function(errthree, callbackthree){
+              res.json({msg: 'Agregada'});       
+            });
+          }
+        });
+      }else{
+        var newSong = new Song({
+          idkey: req.body.idkey,
+          serial: serialSong,
+          owner: req.body.owner,
+          title: req.body.title,
+          duration: req.body.duration,
+        })
+        newSong.save(function(){
+          res.json({msg: 'Agregada'});
+        });
+      }
+    });  
   }else{
-    res.json('Null');
+    res.json({msg: 'Error'});
   }
-})
+});
+
 app.post('/editusers',function(req,res){
   var stateToChange = req.body.state.split(':');
   var newObject = { };  
@@ -384,6 +416,48 @@ app.post('/editusers',function(req,res){
       res.json('Sin cambios');   
     }
   });  
+});
+
+app.post('/getuserpermissions',function(req,res){
+  var actualSession = req.body.email;
+  User.findOne({email: actualSession},function(err, callback){
+    res.json(callback);
+  });
+});
+
+app.post('/skipsong',function(req,res){
+  if(req.body.admin){
+    skipSong();
+    res.json({msg: 'skip song'});
+  }else{
+    res.json({msg: 'nope'});
+  }
+})
+
+app.post('/votes',function(req,res){    
+  Option.find({key: 'sessions'},function(errOne, callbackOne){
+    var sessionLength = callbackOne[0].settings.length;
+    var skipPercent = sessionLength * -0.25;
+    Option.find({key: 'votes'},function(err, callback){
+      var getParticipants = callback[0];
+      var newArray = getParticipants.settings.slice(0);
+      function checkArray(data){
+        return data == req.body.participant;
+      }
+      if(!getParticipants.settings.find(checkArray)){
+        newArray[0] += req.body.vote;
+        newArray.push(req.body.participant);
+        getParticipants.settings = newArray;
+        getParticipants.save();
+        io.emit('update votes', newArray[0]);
+        // if(newArray[0] <= skipPercent ) console.log('se supone que salta aca');
+        if(newArray[0] <= skipPercent ) skipSong();
+        res.json({msg: 'Hecho!'});
+      }else{
+        res.json({msg: 'Ya votó'});
+      }
+    })
+  })
 });
 
 http.listen(3000, function(){

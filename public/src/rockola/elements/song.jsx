@@ -8,6 +8,7 @@ class Song extends React.Component {
     fetchPost('/addtoplaylist',{
       idkey: _this.props.idkey,
       title: _this.props.title,
+      owner: userSession[0],
       sthumbnail: _this.props.sthumbnail,
       duration: _this.props.duration
     },

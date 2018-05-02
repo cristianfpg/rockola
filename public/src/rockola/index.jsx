@@ -1,7 +1,17 @@
 class Rockola extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {results: ''};
+    this.state = {results: '', player: false};
+  }
+  componentDidMount(){
+    const _this = this;
+    userSession = decodeURIComponent(document.cookie.split('session=')[1]).split('|');
+    fetchPost('/getuserpermissions',{
+      email: userSession[0]
+    },
+    function(json){
+      _this.setState({player: json.player});
+    });
   }
   render() {
     return (
@@ -10,7 +20,9 @@ class Rockola extends React.Component {
         <Results/>
         <Playlist/>      
         <PlayerBar/>
-        <div id="iframe-yt"></div> 
+        {this.state.player &&
+          <div id="iframe-yt"></div>
+        }
       </div>
     );
   }

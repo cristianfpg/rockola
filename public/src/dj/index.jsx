@@ -10,7 +10,6 @@ class Dj extends React.Component {
     const _this = this;
     fetchGet(e,function(data){
       var getData = data.data.map((response)=>{
-    console.log(e);        
         switch(e){
           case '/getsessions':
             return <li>{response.name}</li>;
@@ -30,6 +29,15 @@ class Dj extends React.Component {
     this.setState({statevalue: e.target.value});
   }
 
+  handleSkipSong(){
+    fetchPost('/skipsong',{
+      admin: true
+    },
+    function(json){
+      console.log(json);
+    });
+  }
+
   handleEditUsers(e){
     e.preventDefault();
     const _this = this;
@@ -44,6 +52,9 @@ class Dj extends React.Component {
   render() {
     return (
       <div id="main-container">
+        <div>
+          <button onClick={() => this.handleSkipSong()}><p>Cambiar cancion</p></button>
+        </div>
         <div>
           <p>Informacion general</p>
           <button onClick={() => this.handleFetchGet('/getsessions')}><p>Sesiones activas</p></button>
