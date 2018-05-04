@@ -337,10 +337,11 @@ app.get('/validatesignin',function(req,res){
                 name: reqName,
                 email: reqEmail
               });
-              newUser.save(function(){
-                createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res);         
-              });
-              res.json({msg: "¡Usuario nuevo!"});
+              newUser.save();
+              createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res);              
+              // res.json({msg: "¡Usuario nuevo!"});
+              console.log('Nuevo!');
+              res.redirect('/');               
             }
           })    
         }else{
