@@ -1,7 +1,7 @@
 class Dj extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {fetchget: null, useremail: '', statevalue: ''};
+    this.state = {fetchget: null, useremail: '', statevalue: '', countSession: null};
     this.handleEditUsers = this.handleEditUsers.bind(this);
     this.handleChangeEmail = this.handleChangeEmail.bind(this);
     this.handleChangeState = this.handleChangeState.bind(this);
@@ -14,9 +14,14 @@ class Dj extends React.Component {
           case '/getsessions':
             return <li>{response.name}</li>;
           case '/getusers':
-            return <li>email: {response.email}<br/>nombre: {response.name}<br/>admin: {response.admin+''}<br/>player: {response.player+''}<br/>block: {response.block+''}</li>;
+            return <li>email: {response.email}<br/>nombre: {response.name}<br/>admin: {response.admin+''}<br/>player: {response.player+''}</li>;
         }
       });
+      if(e == '/getsessions'){
+        _this.setState({countSession: `Sockets conectados: ${data.count}`});
+      }else{
+        _this.setState({countSession: null});        
+      }
       _this.setState({fetchget: getData});
     });
   }
@@ -59,6 +64,7 @@ class Dj extends React.Component {
           <p>Informacion general</p>
           <button onClick={() => this.handleFetchGet('/getsessions')}><p>Sesiones activas</p></button>
           <button onClick={() => this.handleFetchGet('/getusers')}><p>Todos los usuarios</p></button>
+          <ul>{this.state.countSession}</ul>
           <ul>{this.state.fetchget}</ul>
         </div>
         <div>

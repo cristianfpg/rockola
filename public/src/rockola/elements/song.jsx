@@ -7,14 +7,16 @@ class Song extends React.Component {
     const _this = this;
     fetchPost('/addtoplaylist',{
       idkey: _this.props.idkey,
-      title: _this.props.title,
       owner: userSession[0],
+      title: _this.props.title,
       sthumbnail: _this.props.sthumbnail,
       duration: _this.props.duration
     },
     function(json){
       socket.emit('update playlist');
-      alert(json.msg);
+      if(json.msg == 'En playlist'){
+        alert(json.msg);
+      }
     });
   }
   render() {

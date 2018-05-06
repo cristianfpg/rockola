@@ -18,7 +18,7 @@ class PlayerBar extends React.Component {
   handleVotes(e){
     const _this = this;
     fetchGet('/getplaylist',function(data){
-      if(data[0].owner == userSession[0]){
+      if(data[0].owner == userSession[0] && false){
         alert('No puede votar por su propia cancion');
       }else{
         fetchPost('/votes',{
@@ -26,7 +26,7 @@ class PlayerBar extends React.Component {
           participant: userSession[0]
         },
         function(json){
-          alert(json.msg);
+          console.log(json.msg);
         });
       }
     });

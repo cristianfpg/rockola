@@ -8,6 +8,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mongoose = require('mongoose');
 var request = require('request');
+var puerto = 3000;
 require('dotenv').config();
 
 // --------- primeras ejecuciones -----------
@@ -46,13 +47,15 @@ var actualTime = 0;
 
 var timeInterval;
 var serialSong = 0;
+var countSockets;
+var actualVotesCount;
 
 var userSchema = mongoose.Schema({
   email: {type: String, required: true, unique: true, min: 1},
   name: {type: String, required: true, min: 1},
   admin: {type: Boolean, default: false},
   player: {type: Boolean, default: false},
-  block: {type: Boolean, default: false},
+  songs: {type: [], default: []},
   songs_finished: {type: Number, default: 0},
   songs_skipped: {type: Number, default: 0}
 });
@@ -64,9 +67,9 @@ var songSchema = mongoose.Schema(
     duration: {type: Number, required: true},
     owner: {type: String, required: true, min: 1},
     title: {type: String, default: defaultTitle},
-    sthumbnail: {type: String, default: ''},
+    sthumbnail: {type: String},
     playlist: {type: Boolean, default: true},
-    score: {type: Number, default: 0}
+    score: {type: Number, default: 1}
   },{
     timestamps: true
   }
@@ -159,9 +162,9 @@ function setNewSong(){
     if(!callback){
       Song.update({idkey: defaultIdkey},{$set:{ playlist: true }},function(errtwo, callbacktwo){
         updateVariables({
-          actualIdkey: defaultIdkey,
-          actualTitle: defaultTitle,
-          actualDuration: defaultDuration
+          idkey: defaultIdkey,
+          title: defaultTitle,
+          duration: defaultDuration
         });
         initTimer(defaultDuration);  
         io.emit('get actual song', [defaultIdkey,0]);
@@ -179,10 +182,16 @@ function setNewSong(){
 }
 
 function skipSong(){
-  Song.update({idkey: actualIdkey},{$set:{ playlist: false }},function(err, callback){
-    Option.update({key: 'votes'},{$set:{ settings: [1] }},function(err, callback){
-      setNewSong();
-    })  
+  Song.findOne({idkey: actualIdkey},function(err,callback){
+    var newScore = callback.score;
+    newScore += actualVotesCount;
+    Song.update({idkey: actualIdkey},{$set:{ playlist: false, score: newScore }},function(err, callbackdos){
+      Option.update({key: 'votes'},{$set:{ settings: [1] }},function(err, callbackdos){
+        io.emit('update votes', 1);
+        actualVotesCount = 1;
+        setNewSong();
+      })  
+    });
   });
 }
 
@@ -276,9 +285,10 @@ app.get('/getplaylist', function(req, res){
 });
 
 app.get('/getsessions',function(req,res){
+  countSockets = io.sockets.clients().server.eio.clientsCount;
   Option.findOne({key: 'sessions'},function(err, callback){
     var newCallback = callback.settings;
-    res.json({data: newCallback});
+    res.json({data: newCallback, count: countSockets});
   });
 });
 
@@ -340,7 +350,6 @@ app.get('/validatesignin',function(req,res){
               newUser.save();
               createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res);              
               // res.json({msg: "¡Usuario nuevo!"});
-              console.log('Nuevo!');
               res.redirect('/');               
             }
           })    
@@ -371,23 +380,40 @@ app.post('/addtoplaylist',function(req,res){
       if(callback){
         Song.findOne({idkey: req.body.idkey, playlist: false}).exec(function(errtwo, callbacktwo) {
           if(!callbacktwo){
-            res.json({msg: 'Ya esta en la playlist.'});
+            res.json({msg: 'En playlist'});
           }else{
             Song.update({idkey: req.body.idkey},{$set:{ playlist: true, serial: serialSong, owner: req.body.owner }},function(errthree, callbackthree){
-              res.json({msg: 'Agregada'});       
+              User.findOne({email: req.body.owner},function(errthree, callbackthree){
+                var getSongs = callbackthree.songs;
+                var newArray = getSongs.slice(0);
+                if(newArray.indexOf(req.body.idkey) == -1){
+                  newArray.push(req.body.idkey);
+                  User.update({email: req.body.owner},{$set: {songs: newArray}},function(errfour,callbackfour){
+                  });
+                }
+              });
+              res.json({msg: 'Agregada'});
             });
           }
         });
       }else{
         var newSong = new Song({
-          idkey: req.body.idkey,
           serial: serialSong,
+          idkey: req.body.idkey,
           owner: req.body.owner,
           title: req.body.title,
+          sthumbnail: req.body.sthumbnail,
           duration: req.body.duration,
         })
         newSong.save(function(){
-          res.json({msg: 'Agregada'});
+          User.findOne({email: req.body.owner},function(errtwo, callbacktwo){
+            var getSongs = callbacktwo.songs;
+            var newArray = getSongs.slice(0);
+            newArray.push(req.body.idkey);
+            User.update({email: req.body.owner},{$set: {songs: newArray}},function(errthree,callbackthree){
+              res.json({msg: 'Creada y agregada'});          
+            });
+          });
         });
       }
     });  
@@ -405,9 +431,6 @@ app.post('/editusers',function(req,res){
       break;
     case 'player':
       newObject.player = stateToChange[1];
-      break;
-    case 'block':
-      newObject.block = stateToChange[1];
       break;
   }
   User.update({email: req.body.email},{$set: newObject},function(err, callback){
@@ -437,8 +460,8 @@ app.post('/skipsong',function(req,res){
 
 app.post('/votes',function(req,res){    
   Option.find({key: 'sessions'},function(errOne, callbackOne){
-    var sessionLength = callbackOne[0].settings.length;
-    var skipPercent = sessionLength * -0.25;
+    // var sessionLength = callbackOne[0].settings.length;
+    var skipPercent = countSockets * -0.20;
     Option.find({key: 'votes'},function(err, callback){
       var getParticipants = callback[0];
       var newArray = getParticipants.settings.slice(0);
@@ -450,8 +473,8 @@ app.post('/votes',function(req,res){
         newArray.push(req.body.participant);
         getParticipants.settings = newArray;
         getParticipants.save();
+        actualVotesCount = newArray[0];        
         io.emit('update votes', newArray[0]);
-        // if(newArray[0] <= skipPercent ) console.log('se supone que salta aca');
         if(newArray[0] <= skipPercent ) skipSong();
         res.json({msg: 'Hecho!'});
       }else{
@@ -461,8 +484,8 @@ app.post('/votes',function(req,res){
   })
 });
 
-http.listen(3000, function(){
-  console.log('listening on *:3000');
+http.listen(puerto, function(){
+  console.log('Listening on port '+puerto);
 });
 
 // inicializadores
