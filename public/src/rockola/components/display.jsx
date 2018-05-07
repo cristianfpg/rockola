@@ -14,6 +14,9 @@ class Display extends React.Component {
             sthumbnail={info.sthumbnail}
             views={numberFormat(info.views)}
             duration={info.duration}
+            channel={info.channel}
+            minutes={info.minutes}
+            seconds={info.seconds}
           />
         );
         _this.setState({results});
@@ -31,7 +34,7 @@ class Display extends React.Component {
                   <p className="column thumbnail"></p>
                   <p className="column title">Titulo</p>
                   <p className="column channel">Canal</p>
-                  <p className="column">Reproducciones</p>
+                  <p className="column views">Reproducciones</p>
                 </div>
               </div>
             }

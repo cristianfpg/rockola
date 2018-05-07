@@ -87,11 +87,16 @@ var Option = mongoose.model('Option', optionSchema);
 /* primeras acciones para la base de datos (necesarias para que corra la aplicacion de 1ro)*/
 
 /*
-
 var newUser = new User({
   name: 'admin',
   email: 'desarrollo1@coloralcuadrado.com',
   admin: true
+});
+newUser.save();
+
+var newUser = new User({
+  name: 'admin',
+  email: 'server'
 });
 newUser.save();
 
@@ -146,7 +151,6 @@ function initTimer(fin){
   timeInterval = setInterval(function(){ myTimer() }, 1000);
   function myTimer() {
     actualTime++;
-    console.log(fin-actualTime);
     if(actualTime >= fin ) {
       clearInterval(timeInterval);
       skipSong(true); 
@@ -185,7 +189,6 @@ function setNewSong(){
 function skipSong(finalizo){
   var actualOwner;
   Song.findOne({idkey: actualIdkey},function(err,callback){
-    console.log(callback.owner);
     var newScore = callback.score;
     actualOwner = callback.owner;
     newScore += actualVotesCount;

@@ -10,6 +10,18 @@
   padding: 70px 200px 100px 115px
   &::-webkit-scrollbar
     width: 0 !important
+  .column
+    float: left
+    &.thumbnail
+      width: 5%
+    &.title
+      width: 50%
+    &.channel
+      width: 20%
+    &.views
+      width: 15%
+    &.button
+      width: 5%
   .results-header
     .titulo
       font-weight: 400
@@ -20,3 +32,4 @@
   .song
     width: 100%
     display: block
+    +clearfix

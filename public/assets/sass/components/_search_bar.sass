@@ -5,7 +5,7 @@
   width: 100vw
   z-index: 4
   +clearfix
-  +prefixer(background,linear-gradient(to bottom,#232848, #131629),("webkit", "moz"))
+  +prefixer(background,linear-gradient(to bottom,#232848, #131629),("webkit", "moz", "ms"))
   .version-number
     position: absolute
     top: 5px
@@ -19,7 +19,7 @@
     input
       background: none
       color: white
-      width: 190px
+      width: 200px
       border-bottom: 1px solid rgba(white, 0.3)
       padding: 0 20px
       &::placeholder

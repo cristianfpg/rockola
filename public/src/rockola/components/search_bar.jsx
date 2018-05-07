@@ -27,6 +27,7 @@ class SearchBar extends React.Component {
         const qDetails = epDetails+idkey+'&key='+apiKey;
         if(!value.id.videoId) continue;
         fetchGet(qDetails,function(data){
+          const channel = data.items[0].snippet.channelTitle;
           const dataDuration = data.items[0].contentDetails.duration+'';
           const views = data.items[0].statistics.viewCount;
           const match = dataDuration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
@@ -35,7 +36,7 @@ class SearchBar extends React.Component {
           const seconds = (parseInt(match[3]) || 0);
           const duration = seconds + (minutes*60) + (hours*3600);
           if(duration >= minDuration && duration <= maxDuration){
-            const song = {idkey, title, sthumbnail, views, duration};
+            const song = {idkey, title, sthumbnail, views, duration, channel, minutes, seconds};
             aSong.push(song);
             socket.emit('update results', aSong);
           }
