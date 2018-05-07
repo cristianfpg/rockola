@@ -1,19 +1,21 @@
 doctype html
 html(lang="es")
   head
-    link(rel='stylesheet', href='/css/color.css')
-  body
+    link(href="https://fonts.googleapis.com/css?family=Roboto:300,400,700" rel="stylesheet")
+    link(rel='stylesheet' href='assets/css/rockola.css' type="text/css")
+  body.rockola
     div#rockola
     script(src='https://cdnjs.cloudflare.com/ajax/libs/react/16.0.0/umd/react.production.min.js')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.0.0/umd/react-dom.production.min.js')
     script(src='https://unpkg.com/babel-standalone@6.15.0/babel.min.js')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/fetch/2.0.3/fetch.js')
     script(src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js')
-    script(src='./js/rockola.js')
+    script(src='./assets/js/rockola.js')
     script(src='./src/rockola/elements/song.jsx' type='text/babel')
     script(src='./src/rockola/components/search_bar.jsx' type='text/babel')
-    script(src='./src/rockola/components/results.jsx' type='text/babel')
+    script(src='./src/rockola/components/display.jsx' type='text/babel')
     script(src='./src/rockola/components/playlist.jsx' type='text/babel')
     script(src='./src/rockola/components/player_bar.jsx' type='text/babel')
+    script(src='./src/rockola/components/sessions.jsx' type='text/babel')
     script(src='./src/rockola/index.jsx' type='text/babel')
     

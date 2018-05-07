@@ -98,7 +98,7 @@ newUser.save();
 var newSong = new Song({
   idkey: defaultIdkey,
   title: defaultTitle,
-  owner: 'desarrollo1@coloralcuadrado.com',
+  owner: 'server',
   duration: defaultDuration,
   serial: serialSong,
 })
@@ -146,9 +146,10 @@ function initTimer(fin){
   timeInterval = setInterval(function(){ myTimer() }, 1000);
   function myTimer() {
     actualTime++;
+    console.log(fin-actualTime);
     if(actualTime >= fin ) {
       clearInterval(timeInterval);
-      skipSong(); 
+      skipSong(true); 
     }
   }
 }
@@ -166,7 +167,7 @@ function setNewSong(){
           title: defaultTitle,
           duration: defaultDuration
         });
-        initTimer(defaultDuration);  
+        initTimer(defaultDuration);
         io.emit('get actual song', [defaultIdkey,0]);
         io.emit('update playlist');
         io.emit('new song');
@@ -181,16 +182,28 @@ function setNewSong(){
   }); 
 }
 
-function skipSong(){
+function skipSong(finalizo){
+  var actualOwner;
   Song.findOne({idkey: actualIdkey},function(err,callback){
+    console.log(callback.owner);
     var newScore = callback.score;
+    actualOwner = callback.owner;
     newScore += actualVotesCount;
-    Song.update({idkey: actualIdkey},{$set:{ playlist: false, score: newScore }},function(err, callbackdos){
-      Option.update({key: 'votes'},{$set:{ settings: [1] }},function(err, callbackdos){
+    Song.update({idkey: actualIdkey},{$set:{ playlist: false, score: newScore }},function(errtwo, callbacktwo){
+      Option.update({key: 'votes'},{$set:{ settings: [1] }},function(errthree, callbackthree){
         io.emit('update votes', 1);
         actualVotesCount = 1;
         setNewSong();
       })  
+    });
+    User.findOne({email: actualOwner},function(errtwo, callbacktwo){
+      if(finalizo){
+        callbacktwo.songs_finished++;
+        callbacktwo.save();
+      }else{
+        callbacktwo.songs_skipped++;
+        callbacktwo.save();      
+      }
     });
   });
 }
@@ -208,6 +221,7 @@ function createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res){
 }
 
 io.on('connection', function(socket){
+  countSockets = io.sockets.clients().server.eio.clientsCount;  
   socket.on('update results', function(msg){
     socket.emit('update results',msg);
   });
@@ -216,6 +230,9 @@ io.on('connection', function(socket){
   });
   socket.on('update playlist', function(){
     io.emit('update playlist');   
+  });
+  socket.on('disconnect', function(){
+    countSockets = io.sockets.clients().server.eio.clientsCount;    
   });
 });
 
@@ -285,7 +302,6 @@ app.get('/getplaylist', function(req, res){
 });
 
 app.get('/getsessions',function(req,res){
-  countSockets = io.sockets.clients().server.eio.clientsCount;
   Option.findOne({key: 'sessions'},function(err, callback){
     var newCallback = callback.settings;
     res.json({data: newCallback, count: countSockets});
@@ -296,6 +312,12 @@ app.get('/getusers',function(req,res){
   User.find({},function(err, callback){
     var newCallback = callback;
     res.json({data: newCallback});
+  });
+});
+
+app.post('/getuser',function(req,res){
+  User.find({email: req.body.email},function(err, callback){
+    res.json({data: callback});
   });
 });
 
@@ -337,19 +359,18 @@ app.get('/validatesignin',function(req,res){
           User.find({email: reqEmail},function(err, callback){          
             // no esta registrado
             if(!callback) res.redirect('/signin?error=nosignup');
-            // esta registrado y no esta logueado: unica opcion que deja pasar
+            // esta registrado y no esta logueado: deja pasar
             if(callback.length == 1){
               createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res);
               res.redirect('/'); 
             }else{
-              // crea el usuario si es la 1ra vez que entra
+              // crea el usuario si es la 1ra vez que entra: deja pasar
               var newUser = new User({
                 name: reqName,
                 email: reqEmail
               });
               newUser.save();
               createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res);              
-              // res.json({msg: "¡Usuario nuevo!"});
               res.redirect('/');               
             }
           })    
@@ -451,7 +472,7 @@ app.post('/getuserpermissions',function(req,res){
 
 app.post('/skipsong',function(req,res){
   if(req.body.admin){
-    skipSong();
+    skipSong(false);
     res.json({msg: 'skip song'});
   }else{
     res.json({msg: 'nope'});
@@ -475,7 +496,7 @@ app.post('/votes',function(req,res){
         getParticipants.save();
         actualVotesCount = newArray[0];        
         io.emit('update votes', newArray[0]);
-        if(newArray[0] <= skipPercent ) skipSong();
+        if(newArray[0] <= skipPercent ) skipSong(false);
         res.json({msg: 'Hecho!'});
       }else{
         res.json({msg: 'Ya votó'});

@@ -1,0 +1,30 @@
+.sessions
+  position: absolute
+  background-color: #151d30
+  height: 100vh
+  top: 0
+  left: 0
+  padding: 80px 0
+  text-align: center
+  overflow: scroll
+  z-index: 3
+  &::-webkit-scrollbar
+    width: 0 !important
+  .titulo
+    text-transform: uppercase
+    font-size: 11px
+  .user
+    +size(30px)
+    background-size: cover
+    background-position: center
+    border-radius: 50%
+    margin: 20px 30px
+    &:after
+      content: ''
+      position: absolute
+      display: block
+      bottom: 0
+      right: 0
+      background-color: #03fd21
+      border-radius: 50%
+      +size(7px)

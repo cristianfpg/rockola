@@ -6,8 +6,8 @@ tag.src = "https://www.youtube.com/iframe_api";
 var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 var player;
-var minDuration = 180;
-var maxDuration = 540;
+var minDuration = 150;
+var maxDuration = 300;
 var nSearch = 30;
 var userSession;
 

@@ -1,0 +1,25 @@
+@import base/root
+
+body.signin
+  width: 100vw
+  height: 100vh
+  background: linear-gradient(#18223d, #171925)
+  .slackbtn
+    position: absolute
+    display: block
+    top: 50%
+    left: 50%
+    width: 80px
+    height: 80px
+    border-radius: 50%
+    background-image: url(../img/slackbtn.jpg) 
+    background-size: contain
+    background-position: center
+    box-shadow: 0 0 20px rgba(white, 0.3)
+    -webkit-transform: translate(-50%, -50%)
+    -ms-transform: translate(-50%, -50%)
+    transform: translate(-50%, -50%)
+    -webkit-transition: all .6s ease-out
+    transition: all .6s ease-out
+    &:hover, &:focus, &:visited
+      box-shadow: 0 0 60px rgba(white, 0.8)

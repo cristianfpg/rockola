@@ -1,9 +1,15 @@
 class SearchBar extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {value_input: ''};
+    this.state = {value_input: '', userSession: []};
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
+  }
+  componentDidMount(){
+    const _this = this;
+    setTimeout(function(){
+      _this.setState({userSession: userSession});
+    },1);
   }
   handleChange(event) {
     this.setState({value_input: event.target.value});
@@ -40,10 +46,25 @@ class SearchBar extends React.Component {
     event.preventDefault();
   }
   render() {
+    let styleImg = {};
+    const urlImg =  this.state.userSession[2];
+    const srcImg = `url(${urlImg})`;
+    if(typeof urlImg != 'undefined'){
+      styleImg = {
+        backgroundImage: srcImg
+      };
+    }
     return (
-      <form className="search-bar" onSubmit={this.handleSubmit}>
-        <input type="text" onChange={this.handleChange} ref={el => this.inputTitle = el}/>
-      </form>
+      <div className="search-bar">
+        <p className="version-number">v 0.1.3</p>
+        <form className="search-input" onSubmit={this.handleSubmit}>
+          <input type="text" onChange={this.handleChange} ref={el => this.inputTitle = el} placeholder="Buscar por ID o palabra clave"/>
+        </form>
+        <div className="profile">
+          <p className="name">{this.state.userSession[1]}</p>
+          <div className="image" style={styleImg}></div>
+        </div>
+      </div>
     );
   }
 }

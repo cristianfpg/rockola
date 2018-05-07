@@ -1,7 +1,7 @@
 class Rockola extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {results: '', player: false};
+    this.state = {results: '', player: false, userSession: null};
   }
   componentDidMount(){
     const _this = this;
@@ -17,7 +17,8 @@ class Rockola extends React.Component {
     return (
       <div id="main-container">
         <SearchBar/>
-        <Results/>
+        <Sessions/>
+        <Display/>
         <Playlist/>      
         <PlayerBar/>
         {this.state.player &&

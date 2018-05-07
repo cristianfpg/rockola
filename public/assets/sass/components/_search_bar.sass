@@ -1,0 +1,45 @@
+.search-bar
+  position: absolute
+  top: 0
+  left: 0
+  width: 100vw
+  z-index: 4
+  +clearfix
+  +prefixer(background,linear-gradient(to bottom,#232848, #131629),("webkit", "moz"))
+  .version-number
+    position: absolute
+    top: 5px
+    left: 5px
+    color: white
+    opacity: 0.2
+    font-size: 9px
+  .search-input
+    display: inline-block
+    padding: 15px 0 15px 130px
+    input
+      background: none
+      color: white
+      width: 190px
+      border-bottom: 1px solid rgba(white, 0.3)
+      padding: 0 20px
+      &::placeholder
+        color: white
+        opacity: 0.3
+        font-size: 11px
+  .profile
+    float: right
+    padding: 13px
+    .name, .image
+      display: inline-block
+      vertical-align: middle
+    .name
+      font-size: 10px
+      opacity: 0.5
+      margin-right: 10px
+    .image
+      +size(22px)
+      background-color: white
+      border-radius: 50%
+      border: 1.2px solid #9f245d
+      background-size: cover
+      background-position: center
