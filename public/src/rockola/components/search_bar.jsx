@@ -20,24 +20,29 @@ class SearchBar extends React.Component {
     fetchGet(qSearch,function(data){
       _this.inputTitle.value = '';
       let aSong = [];
-      for (var value of data.items) {
+      let searchCount = 0;
+      let song = null;
+      for (let value of data.items) {
         const idkey = value.id.videoId;
         const title = value.snippet.title;
         const sthumbnail = value.snippet.thumbnails.high.url;
         const qDetails = epDetails+idkey+'&key='+apiKey;
         if(!value.id.videoId) continue;
-        fetchGet(qDetails,function(data){
-          const channel = data.items[0].snippet.channelTitle;
-          const dataDuration = data.items[0].contentDetails.duration+'';
-          const views = data.items[0].statistics.viewCount;
+        fetchGet(qDetails,function(dataTwo){
+          const channel = dataTwo.items[0].snippet.channelTitle;
+          const dataDuration = dataTwo.items[0].contentDetails.duration+'';
+          const views = parseInt(dataTwo.items[0].statistics.viewCount);
           const match = dataDuration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
           const hours = (parseInt(match[1]) || 0);
           const minutes = (parseInt(match[2]) || 0);
           const seconds = (parseInt(match[3]) || 0);
           const duration = seconds + (minutes*60) + (hours*3600);
           if(duration >= minDuration && duration <= maxDuration){
-            const song = {idkey, title, sthumbnail, views, duration, channel, minutes, seconds};
+            song = {idkey, title, sthumbnail, views, duration, channel, minutes, seconds};
             aSong.push(song);
+          }
+          searchCount++;
+          if(searchCount == data.items.length){
             socket.emit('update results', aSong);
           }
         })

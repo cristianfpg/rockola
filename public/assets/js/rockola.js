@@ -7,7 +7,7 @@ var firstScriptTag = document.getElementsByTagName('script')[0];
 firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 var player;
 var minDuration = 150;
-var maxDuration = 300;
+var maxDuration = 270;
 var nSearch = 30;
 var userSession;
 

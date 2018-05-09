@@ -39,6 +39,7 @@ db.once('open',function(){});
 var defaultIdkey = '_Uie2r5wWxw';
 var defaultTitle = 'Título por defecto del servidor.';
 var defaultDuration = 120;
+var defaultImage = 'https://t1.uc.ltmcdn.com/images/0/3/4/img_como_hacer_una_fogata_25430_orig.jpg';
 
 var actualIdkey = '';
 var actualTitle = '';
@@ -67,9 +68,10 @@ var songSchema = mongoose.Schema(
     duration: {type: Number, required: true},
     owner: {type: String, required: true, min: 1},
     title: {type: String, default: defaultTitle},
-    sthumbnail: {type: String},
+    sthumbnail: {type: String, default: ''},
     playlist: {type: Boolean, default: true},
-    score: {type: Number, default: 1}
+    score: {type: Number, default: 1},
+    channel: {type: String, default: ''}
   },{
     timestamps: true
   }
@@ -106,6 +108,7 @@ var newSong = new Song({
   owner: 'server',
   duration: defaultDuration,
   serial: serialSong,
+  sthumbnail: defaultImage
 })
 newSong.save();
 
@@ -219,12 +222,13 @@ function createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res){
   req.session.email = reqEmail;
   req.session.name = reqName;
   req.session.image = reqImage;
+  req.session.onclient = true;
   cookieString = reqEmail+'|'+reqName+'|'+reqImage;
   res.cookie('session', cookieString, { maxAge: 900000000000, httpOnly: false});
 }
 
 io.on('connection', function(socket){
-  countSockets = io.sockets.clients().server.eio.clientsCount;  
+  countSockets = io.sockets.clients().server.eio.clientsCount;
   socket.on('update results', function(msg){
     socket.emit('update results',msg);
   });
@@ -235,7 +239,7 @@ io.on('connection', function(socket){
     io.emit('update playlist');   
   });
   socket.on('disconnect', function(){
-    countSockets = io.sockets.clients().server.eio.clientsCount;    
+    countSockets = io.sockets.clients().server.eio.clientsCount;  
   });
 });
 
@@ -300,6 +304,12 @@ app.get('/dj',function(req,res){
 // ENDPOINTS GET
 app.get('/getplaylist', function(req, res){
   Song.find({playlist: true}).sort({serial: 1, updatedAt: 1}).exec(function(err, callback) { 
+    res.json(callback);
+  });
+});
+
+app.get('/getactualsong', function(req, res){
+  Song.findOne({playlist: true}).sort({serial: 1, updatedAt: 1}).exec(function(err, callback) { 
     res.json(callback);
   });
 });
@@ -428,12 +438,13 @@ app.post('/addtoplaylist',function(req,res){
           title: req.body.title,
           sthumbnail: req.body.sthumbnail,
           duration: req.body.duration,
+          channel: req.body.channel
         })
         newSong.save(function(){
           User.findOne({email: req.body.owner},function(errtwo, callbacktwo){
             var getSongs = callbacktwo.songs;
             var newArray = getSongs.slice(0);
-            newArray.push(req.body.idkey);
+            newArray.push({idkey: req.body.idkey, title: req.body.title});
             User.update({email: req.body.owner},{$set: {songs: newArray}},function(errthree,callbackthree){
               res.json({msg: 'Creada y agregada'});          
             });
@@ -484,7 +495,6 @@ app.post('/skipsong',function(req,res){
 
 app.post('/votes',function(req,res){    
   Option.find({key: 'sessions'},function(errOne, callbackOne){
-    // var sessionLength = callbackOne[0].settings.length;
     var skipPercent = countSockets * -0.20;
     Option.find({key: 'votes'},function(err, callback){
       var getParticipants = callback[0];

@@ -1,10 +1,12 @@
 class Song extends React.Component {
   constructor(props){
     super(props);
+    this.state = {active: ''};
     this.addToPlaylist = this.addToPlaylist.bind(this);
   }
   addToPlaylist(){
     const _this = this;
+    _this.setState({active: 'active'});
     fetchPost('/addtoplaylist',{
       idkey: _this.props.idkey,
       owner: userSession[0],
@@ -26,13 +28,15 @@ class Song extends React.Component {
     const isHigher = this.props.seconds < 10;
     const newSec = `0${this.props.seconds}`
     return (
-      <div className="song">
-        <div className="column thumbnail" style={{backgroundImage: `url(${this.props.sthumbnail})`}}></div>
-        <p className="column title">{this.props.title}</p>
+      <div className={`song row ${this.state.active}`} onMouseUp={this.addToPlaylist}>
+        <div className="column thumbnail">
+          <div style={{backgroundImage: `url(${this.props.sthumbnail})`}}></div>
+        </div>
+        <p className="column title-name">{this.props.title}</p>
         <p className="column channel">{this.props.channel}</p>
         <p className="column views">{this.props.views}</p>
         <p className="column time">{this.props.minutes}:{isHigher ? newSec : this.props.seconds}</p>
-        <a className="column button" onClick={this.addToPlaylist}>click</a>
+        <a className="column button">+</a>
       </div>
     );
   }

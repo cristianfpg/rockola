@@ -1,0 +1,37 @@
+.playlist
+  position: fixed
+  height: 100vh
+  background-color: $bckPlaylist
+  top: 0
+  right: 0
+  z-index: 2
+  padding: 80px 30px
+  .titulo
+    font-size: 13px
+    text-transform: uppercase
+    margin-bottom: 30px
+    letter-spacing: 1px
+  .actual-song, .other-songs
+    width: 260px
+  .actual-song
+    .thumbnail
+      height: 260px
+      background-position: center
+      background-size: cover
+    .title
+      font-size: 13px
+      font-weight: 700
+      margin-top: 20px
+    .channel-content
+      margin-bottom: 30px
+      .channel
+        font-size: 11px
+        opacity: 0.4
+        margin-top: 10px
+  .other-songs
+    height: 340px
+    overflow: scroll
+    p
+      padding: 10px 0
+      border-bottom: 1px solid $borderOtherPlaylist
+      font-size: 12px

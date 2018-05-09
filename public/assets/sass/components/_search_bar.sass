@@ -4,28 +4,26 @@
   left: 0
   width: 100vw
   z-index: 4
+  +prefixer(background,linear-gradient($firstBckSearch, $lastBckSearch),("webkit", "moz", "ms"))   
   +clearfix
-  +prefixer(background,linear-gradient(to bottom,#232848, #131629),("webkit", "moz", "ms"))
   .version-number
     position: absolute
     top: 5px
     left: 5px
-    color: white
-    opacity: 0.2
+    color: $textVersionNumber
     font-size: 9px
   .search-input
     display: inline-block
     padding: 15px 0 15px 130px
     input
-      background: none
+      background-color: $bckSearchInput
       color: white
       width: 200px
-      border-bottom: 1px solid rgba(white, 0.3)
-      padding: 0 20px
+      border-bottom: 1px solid $borderSearchInput
+      padding: 7px
+      font-size: 12px
       &::placeholder
-        color: white
-        opacity: 0.3
-        font-size: 11px
+        color: $placeholderSearchInput
   .profile
     float: right
     padding: 13px
@@ -38,8 +36,7 @@
       margin-right: 10px
     .image
       +size(22px)
-      background-color: white
       border-radius: 50%
-      border: 1.2px solid #9f245d
+      border: 1.2px solid $borderProfile 
       background-size: cover
       background-position: center

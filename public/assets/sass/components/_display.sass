@@ -5,31 +5,73 @@
   height: 100vh
   top: 0
   left: 0
-  background-color: #1a213d
+  background-color: $bckDisplay
   overflow: scroll
-  padding: 70px 200px 100px 115px
   &::-webkit-scrollbar
     width: 0 !important
-  .column
-    float: left
-    &.thumbnail
-      width: 5%
-    &.title
-      width: 50%
-    &.channel
-      width: 20%
-    &.views
-      width: 15%
-    &.button
-      width: 5%
-  .results-header
-    .titulo
-      font-weight: 400
-      opacity: 0.5
-      font-size: 17px
-    .row
-      border-bottom: 1px solid black
-  .song
+  .results
     width: 100%
-    display: block
-    +clearfix
+    height: 100%
+    padding: 70px 320px 100px 30px 
+    .row
+      &:not(.results-header)
+        border-bottom: 1px solid black
+      .column
+        display: inline-block
+        vertical-align: middle
+        &.thumbnail
+          width: 35px
+        &.title-name
+          width: calc(100% - 440px)
+          padding: 0 10px
+        &.channel
+          width: 200px
+          padding: 0 10px
+        &.views
+          width: 140px
+          padding: 0 10px
+        &.time
+          width: 35px
+        &.duration
+          width: 40px
+        &.button
+          width: 30px
+          font-size: 24px
+          top: -1px
+          text-align: right
+      &.results-header
+        margin-bottom: 10px
+        padding: 0 20px 0 10px
+        .title
+          letter-spacing: 1px
+          font-weight: 400
+          opacity: 0.5
+          font-size: 17px
+          margin-bottom: 25px
+        .column
+          font-size: 13px
+          text-transform: uppercase
+          &.thumbnail
+            opacity: 0
+    .songs
+      font-size: 13px
+      height: 100%
+      padding-bottom: 85px
+      overflow: scroll
+      .song
+        width: 100%
+        display: block
+        padding: 5px 20px 5px 10px
+        cursor: pointer        
+        +transition(.3s)
+        &:hover
+          background-color: $hoverSong
+        &.active
+          color: $textActiveSong
+        .thumbnail
+          >div
+            background-size: cover
+            background-position: center
+            border-radius: 50%
+            margin: 0 auto
+            +size(30px)

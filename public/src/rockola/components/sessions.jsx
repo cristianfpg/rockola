@@ -18,8 +18,8 @@ class Sessions extends React.Component {
   render(){
     return(
       <div className="sessions">
-        <p className="titulo">En linea</p>
-        {this.state.sessions}
+        {/* <p className="titulo">En linea</p>
+        {this.state.sessions} */}
       </div>
     );
   }

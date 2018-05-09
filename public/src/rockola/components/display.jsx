@@ -19,27 +19,34 @@ class Display extends React.Component {
             seconds={info.seconds}
           />
         );
-        _this.setState({results});
+        if(results.length <= 0){
+          _this.setState({results: <p className="sin-resultados">No se encontraron resultado válidos</p>});
+        }else{
+          _this.setState({results});
+        }
       });
     }
     render() {
-      const resultsLength = this.state.results.length > 0 || true;
+      const resultsLength = this.state.results.length > 0;
       return (
         <div className="display">
-          <div className="results-header">
+          <div className="results">
             {resultsLength &&
-              <div>
-                <p className="titulo">Resultados</p>
-                <div className="row">
-                  <p className="column thumbnail"></p>
-                  <p className="column title">Titulo</p>
+              <div className="row results-header">
+                <p className="title">Resultados</p>
+                <div className="subtitle">
+                  <p className="column thumbnail">T</p>
+                  <p className="column title-name">Titulo</p>
                   <p className="column channel">Canal</p>
                   <p className="column views">Reproducciones</p>
+                  <p className="column duration">Dur.</p>
                 </div>
               </div>
             }
+            <div className="songs">
+              {this.state.results}
+            </div>
           </div>
-          {this.state.results}
         </div>
       );
     }
