@@ -10,6 +10,7 @@ var minDuration = 150;
 var maxDuration = 270;
 var nSearch = 30;
 var userSession;
+var turnCooldown = 2;
 
 // base endpoints
 var epSearch = 'https://www.googleapis.com/youtube/v3/search?q=';

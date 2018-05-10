@@ -15,7 +15,7 @@
     width: 260px
   .actual-song
     .thumbnail
-      height: 260px
+      height: 200px
       background-position: center
       background-size: cover
     .title
@@ -24,14 +24,22 @@
       margin-top: 20px
     .channel-content
       margin-bottom: 30px
+      .channel, .bars
+        display: inline-block
+        vertical-align: middle        
       .channel
         font-size: 11px
         opacity: 0.4
         margin-top: 10px
+        width: calc(100% - 50px)
   .other-songs
-    height: 340px
+    height: calc(100% - 440px)
     overflow: scroll
     p
       padding: 10px 0
       border-bottom: 1px solid $borderOtherPlaylist
       font-size: 12px
+      span
+        font-weight: 700
+        &:after
+          content: '. '

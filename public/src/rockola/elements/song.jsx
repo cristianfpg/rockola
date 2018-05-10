@@ -5,6 +5,11 @@ class Song extends React.Component {
     this.addToPlaylist = this.addToPlaylist.bind(this);
   }
   addToPlaylist(){
+    if(document.cookie.search('cooldown=true') > 0){
+      alert('Puede agregar una cancion cada '+turnCooldown+' minutos.');
+      return true;
+    }
+    console.log();
     const _this = this;
     _this.setState({active: 'active'});
     fetchPost('/addtoplaylist',{
@@ -21,6 +26,10 @@ class Song extends React.Component {
       socket.emit('update playlist');
       if(json.msg == 'En playlist'){
         alert(json.msg);
+      }else{
+        var d = new Date();
+        d.setTime(d.getTime() + turnCooldown*(60*1000));
+        document.cookie = 'cooldown=true;expires='+d.toGMTString()+';';
       }
     });
   }

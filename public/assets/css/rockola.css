@@ -43,7 +43,7 @@ body {
   .display .results {
     width: 100%;
     height: 100%;
-    padding: 70px 320px 100px 30px; }
+    padding: 70px 320px 100px 70px; }
     .display .results .row:not(.results-header) {
       border-bottom: 1px solid black; }
     .display .results .row .column {
@@ -132,12 +132,11 @@ body {
     left: 0;
     top: -120px;
     pointer-events: none;
-    -webkit-background: linear-gradient(transparent, rgba(0, 0, 0, 0.3));
-    -moz-background: linear-gradient(transparent, rgba(0, 0, 0, 0.3));
-    -ms-background: linear-gradient(transparent, rgba(0, 0, 0, 0.3));
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.3)); }
+    -webkit-background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+    -moz-background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+    -ms-background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.5)); }
   .player-bar .progress-bar {
-    width: 100%;
     height: 4px;
     position: absolute;
     top: 0;
@@ -148,18 +147,51 @@ body {
     background: linear-gradient(to right, #a26fed, #fd4a6c); }
   .player-bar .ownerimage, .player-bar .title {
     display: inline-block;
-    vertical-align: top; }
+    vertical-align: middle; }
   .player-bar .ownerimage {
     background-size: cover;
     background-position: center;
     border-radius: 50%;
     margin-right: 20px;
-    height: 35px;
-    width: 35px; }
+    height: 45px;
+    width: 45px; }
   .player-bar .title {
     width: calc(100% - 100px); }
     .player-bar .title .songtitle {
-      line-height: 1; }
+      line-height: 1;
+      font-size: 25px;
+      margin-bottom: 10px; }
+    .player-bar .title .votes .btn-vote, .player-bar .title .votes .votes-state {
+      display: inline-block;
+      vertical-align: middle; }
+    .player-bar .title .votes.false .btn-vote {
+      cursor: auto;
+      opacity: 0.2;
+      pointer-events: none; }
+    .player-bar .title .votes.false .votes-state .actual-vote-bar {
+      -webkit-transition: all 0.2s linear;
+      -moz-transition: all 0.2s linear;
+      -ms-transition: all 0.2s linear;
+      transition: all 0.2s linear; }
+    .player-bar .title .votes .votes-state {
+      width: 150px;
+      height: 5px;
+      border-radius: 5px;
+      background-color: #3C3C3C;
+      margin: 0 10px;
+      overflow: hidden; }
+      .player-bar .title .votes .votes-state .mark {
+        background-color: #273047;
+        width: 5px;
+        height: 5px;
+        top: 0;
+        position: absolute;
+        z-index: 1; }
+      .player-bar .title .votes .votes-state .actual-vote-bar {
+        height: 100%;
+        position: absolute;
+        top: 0;
+        z-index: 0; }
 
 .playlist {
   position: fixed;
@@ -177,7 +209,7 @@ body {
   .playlist .actual-song, .playlist .other-songs {
     width: 260px; }
   .playlist .actual-song .thumbnail {
-    height: 260px;
+    height: 200px;
     background-position: center;
     background-size: cover; }
   .playlist .actual-song .title {
@@ -186,17 +218,25 @@ body {
     margin-top: 20px; }
   .playlist .actual-song .channel-content {
     margin-bottom: 30px; }
+    .playlist .actual-song .channel-content .channel, .playlist .actual-song .channel-content .bars {
+      display: inline-block;
+      vertical-align: middle; }
     .playlist .actual-song .channel-content .channel {
       font-size: 11px;
       opacity: 0.4;
-      margin-top: 10px; }
+      margin-top: 10px;
+      width: calc(100% - 50px); }
   .playlist .other-songs {
-    height: 340px;
+    height: calc(100% - 440px);
     overflow: scroll; }
     .playlist .other-songs p {
       padding: 10px 0;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       font-size: 12px; }
+      .playlist .other-songs p span {
+        font-weight: 700; }
+        .playlist .other-songs p span:after {
+          content: ". "; }
 
 .search-bar {
   position: absolute;
@@ -264,12 +304,12 @@ body {
     text-transform: uppercase;
     font-size: 9px; }
   .sessions .user {
-    height: 20px;
-    width: 20px;
+    height: 25px;
+    width: 25px;
     background-size: cover;
     background-position: center;
     border-radius: 50%;
-    margin: 10px 15px; }
+    margin: 15px; }
     .sessions .user:after {
       content: "";
       position: absolute;

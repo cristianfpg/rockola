@@ -15,22 +15,55 @@
     pointer-events: none
     +prefixer(background,linear-gradient($firstGradient, $lastGradient),("webkit", "moz", "ms"))     
   .progress-bar
-    width: 100%
     height: 4px
     position: absolute
     top: 0
     left: 0
-    +prefixer(background,linear-gradient(to right,$firstProgressColor, $lastProgressColor),("webkit", "moz", "ms"))  
+    +prefixer(background,linear-gradient(to right,$firstProgressColor, $lastProgressColor),("webkit", "moz", "ms"))
+    // +prefixer(transition, all 1s linear,("webkit", "moz", "ms"))
   .ownerimage, .title
     display: inline-block
-    vertical-align: top
+    vertical-align: middle
   .ownerimage
     background-size: cover
     background-position: center
     border-radius: 50%
     margin-right: 20px
-    +size(35px)
+    +size(45px)
   .title
     width: calc(100% - 100px)
     .songtitle
       line-height: 1
+      font-size: 25px
+      margin-bottom: 10px
+    .votes
+      .btn-vote, .votes-state
+        display: inline-block
+        vertical-align: middle
+      &.false
+        .btn-vote
+          cursor: auto
+          opacity: 0.2
+          pointer-events: none
+        .votes-state
+          .actual-vote-bar
+            +prefixer(transition, all 0.2s linear,("webkit", "moz", "ms"))
+      .votes-state
+        width: 150px
+        height: 5px
+        border-radius: 5px
+        background-color: #3C3C3C
+        margin: 0 10px
+        overflow: hidden
+        .mark
+          background-color: $bckPlayerBar
+          width: 5px
+          height: 5px
+          top: 0
+          position: absolute
+          z-index: 1
+        .actual-vote-bar
+          height: 100%
+          position: absolute
+          top: 0
+          z-index: 0

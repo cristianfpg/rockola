@@ -154,6 +154,7 @@ function initTimer(fin){
   timeInterval = setInterval(function(){ myTimer() }, 1000);
   function myTimer() {
     actualTime++;
+    io.emit('progress bar', [actualTime, fin]);
     if(actualTime >= fin ) {
       clearInterval(timeInterval);
       skipSong(true); 
@@ -197,7 +198,7 @@ function skipSong(finalizo){
     newScore += actualVotesCount;
     Song.update({idkey: actualIdkey},{$set:{ playlist: false, score: newScore }},function(errtwo, callbacktwo){
       Option.update({key: 'votes'},{$set:{ settings: [1] }},function(errthree, callbackthree){
-        io.emit('update votes', 1);
+        io.emit('update votes', [1,countSockets]);
         actualVotesCount = 1;
         setNewSong();
       })  
@@ -237,6 +238,15 @@ io.on('connection', function(socket){
   });
   socket.on('update playlist', function(){
     io.emit('update playlist');   
+  });
+  socket.on('listen sessions', function(){
+    io.emit('listen sessions');   
+  });
+  socket.on('new song', function(){
+    io.emit('new song');   
+  });
+  socket.on('update votes',function(){
+    io.emit('update votes',[actualVotesCount,countSockets]);
   });
   socket.on('disconnect', function(){
     countSockets = io.sockets.clients().server.eio.clientsCount;  
@@ -346,6 +356,7 @@ app.get('/logout',function(req,res){
       res.clearCookie('session');
       req.session.destroy();
       res.json('Successful logout');
+      io.emit('listen sessions');
     })
   }else{
     res.redirect('/');
@@ -375,6 +386,7 @@ app.get('/validatesignin',function(req,res){
             // esta registrado y no esta logueado: deja pasar
             if(callback.length == 1){
               createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res);
+              io.emit('listen sessions');    
               res.redirect('/'); 
             }else{
               // crea el usuario si es la 1ra vez que entra: deja pasar
@@ -383,7 +395,8 @@ app.get('/validatesignin',function(req,res){
                 email: reqEmail
               });
               newUser.save();
-              createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res);              
+              createSession(newArray,reqEmail,reqName,reqImage,getSettings,req,res);
+              io.emit('listen sessions');                          
               res.redirect('/');               
             }
           })    
@@ -495,7 +508,7 @@ app.post('/skipsong',function(req,res){
 
 app.post('/votes',function(req,res){    
   Option.find({key: 'sessions'},function(errOne, callbackOne){
-    var skipPercent = countSockets * -0.20;
+    var skipPercent = countSockets * -0.2;
     Option.find({key: 'votes'},function(err, callback){
       var getParticipants = callback[0];
       var newArray = getParticipants.settings.slice(0);
@@ -507,8 +520,8 @@ app.post('/votes',function(req,res){
         newArray.push(req.body.participant);
         getParticipants.settings = newArray;
         getParticipants.save();
-        actualVotesCount = newArray[0];        
-        io.emit('update votes', newArray[0]);
+        actualVotesCount = newArray[0];   
+        io.emit('update votes', [newArray[0], countSockets]);
         if(newArray[0] <= skipPercent ) skipSong(false);
         res.json({msg: 'Hecho!'});
       }else{
